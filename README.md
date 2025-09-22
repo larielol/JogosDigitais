@@ -178,3 +178,22 @@ Dedicação: 3 pts inspiração, 5 pts execução, 2 pts embalagem
 
 
 Publique aqui o seu protótipo executável e  um pequeno vídeo com pessoas jogando o seu jogo e emitindo um opinião sobre o jogo e sobre a experiência ao jogá-lo.
+
+-----------------------------------------------------------------------------
+
+Crie uma versão corrigida do seu Jogo de Artesanato Terapêutico contendo a fase de diagnóstico com dados reais do jogador e a fase de simulação de prática de artesanato terapêutico.
+
+Grave 5 vídeos de 5 usuários jogando o jogo e grave um áudio de entrevista com cada usuário respondendo as seguintes questões de avaliação do jogo:
+
+Perguntas da entrevista de avaliação:
+
+1. Você conseguiu contar obter um diagnóstico da sua saúde mental na primeira fase do jogo ? Se não, porquê? 
+
+2. Você conseguiu obter uma novo diagnóstico da saúde mental do seu personagem no final da simulação de sua prática de artesanato terapêutico? Se não, porquê? 
+
+3. O que você acha que precisa ser feito pra melhorar jogo de artesanato terapêutico que você testou? 
+
+4. Pra você, qual é o maior benefício trazido pelo jogo de artesanato terapêutico que você testou?
+
+Publique aqui o link para os arquivos do  código executável do jogo, dos vídeos dos 5 testes e dos áudios das 5 entrevistas dos usuários participantes do teste.
+
