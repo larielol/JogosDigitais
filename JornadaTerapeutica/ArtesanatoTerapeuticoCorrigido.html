@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Jornada do Criador Interior - Versão Corrigida</title>
+  <style>
+    :root{
+      --primary:#8B4513;--secondary:#D2691E;--accent:#FFD700;
+      --light:#F5F5DC;--dark:#2F4F4F;--success:#228B22;--danger:#DC143C;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif}
+    body{background:linear-gradient(135deg,#f5f7fa 0%,#c3cfe2 100%);min-height:100vh;padding:20px;color:var(--dark)}
+    .container{max-width:1200px;margin:0 auto;background:#fff;border-radius:15px;box-shadow:0 10px 30px rgba(0,0,0,.1);overflow:hidden}
+    header{background:linear-gradient(to right,var(--primary),var(--secondary));color:#fff;padding:30px;text-align:center}
+    h1{font-size:2.2rem;margin-bottom:10px}
+    .subtitle{opacity:.9}
+    .game-area{display:flex;min-height:640px}
+    .sidebar{width:320px;background:var(--light);padding:20px;border-right:1px solid #ddd}
+    .main-content{flex:1;padding:30px;display:flex;flex-direction:column}
+    .progress-container{margin-bottom:20px}
+    .progress-bar{height:10px;background:#e0e0e0;border-radius:5px;overflow:hidden}
+    .progress-fill{height:100%;background:linear-gradient(to right,var(--secondary),var(--accent));width:0%;transition:width .4s ease}
+    .stats{display:flex;gap:10px;margin:15px 0;flex-wrap:wrap}
+    .stat-card{background:#fff;padding:12px;border-radius:10px;text-align:center;flex:1;min-width:90px;box-shadow:0 2px 8px rgba(0,0,0,.07)}
+    .stat-title{font-size:.9rem}
+    .stat-value{font-size:1.6rem;font-weight:700;color:var(--primary)}
+    .narrative{background:#f9f9f9;padding:16px;border-radius:10px;margin-bottom:16px;border-left:5px solid var(--secondary)}
+    .choices-container{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-top:10px}
+    .choice-card{background:#fff;border:2px solid #ddd;border-radius:12px;padding:14px;cursor:pointer;transition:all .25s ease;text-align:center;outline:0}
+    .choice-card:hover,.choice-card:focus{transform:translateY(-4px);border-color:var(--secondary);box-shadow:0 6px 14px rgba(0,0,0,.1)}
+    .choice-card.selected{border-color:var(--accent);background:#fff9e6}
+    .choice-icon{font-size:1.8rem;margin-bottom:6px}
+    .phase-title{color:var(--primary);margin-bottom:10px;padding-bottom:8px;border-bottom:2px solid var(--light)}
+    .btn{background:linear-gradient(to right,var(--primary),var(--secondary));color:#fff;border:none;padding:12px 22px;border-radius:40px;font-size:1rem;cursor:pointer;transition:all .25s ease;align-self:flex-end}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 6px 16px rgba(0,0,0,.18)}
+    .btn:disabled{background:#cfcfcf;cursor:not-allowed;transform:none;box-shadow:none}
+    .btn-secondary{background:linear-gradient(to right,#6c757d,#868e96)}
+    .hidden{display:none}
+    .report-comparison{display:flex;gap:16px;flex-wrap:wrap;margin:20px 0}
+    .report-card{background:var(--light);padding:16px;border-radius:10px;flex:1;min-width:260px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+    .metric{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px dashed #cfcfcf}
+    .metric-value{font-weight:700}
+    .results-screen{text-align:center;padding:20px}
+    .essence-count{font-size:3rem;color:var(--accent);margin:12px 0;text-shadow:2px 2px 4px rgba(0,0,0,.2)}
+    .simulation-results{display:flex;flex-wrap:wrap;gap:12px;margin-top:10px}
+    .simulation-card{flex:1;min-width:200px;background:var(--light);padding:12px;border-radius:10px;text-align:center}
+    .simulation-value{font-size:1.4rem;font-weight:700;color:var(--primary)}
+    .activity-log{margin-top:16px;max-height:200px;overflow:auto;border:1px solid #ddd;border-radius:6px;background:#fafafa}
+    .activity-log h3{padding:8px 10px}
+    .log-entry{padding:6px 10px;border-top:1px solid #eee}
+    .positive{color:var(--success)} .negative{color:var(--danger)}
+    /* Sliders */
+    .diagnostic-question{margin-bottom:18px}
+    .slider-container{margin:10px 0}
+    input[type=range]{width:100%}
+    .slider{height:10px;border-radius:5px;background:#ddd;outline:none;-webkit-appearance:none}
+    .slider::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;border-radius:50%;background:var(--primary);cursor:pointer}
+    .slider-labels{display:flex;justify-content:space-between;margin-top:5px;font-size:.9rem;color:#666}
+    /* Choices summary chips */
+    #choices-summary{margin-top:8px}
+    .chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #ddd;border-radius:999px;padding:6px 10px;margin:4px 4px 0 0;font-size:.88rem}
+    .chip small{opacity:.75}
+    /* Mobile */
+    @media (max-width: 900px){
+      .game-area{flex-direction:column}
+      .sidebar{width:100%}
+      .btn{align-self:stretch}
+    }
+  </style>
+</head>
+<body>
+<div class="container" role="application">
+  <header>
+    <h1 aria-label="Jornada do Criador Interior">A Jornada do Criador Interior</h1>
+    <div class="subtitle">Diagnóstico + Simulação prática de artesanato terapêutico</div>
+  </header>
+
+  <div class="game-area">
+    <aside class="sidebar" aria-label="Painel lateral">
+      <h2 class="phase-title">Sua Jornada</h2>
+      <div class="progress-container" aria-live="polite">
+        <div>Progresso: <span id="progress-percent">0%</span></div>
+        <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+      </div>
+
+      <div class="stats">
+        <div class="stat-card" aria-live="polite">
+          <div class="stat-title">Essências</div>
+          <div class="stat-value" id="essence-count">0</div>
+        </div>
+        <div class="stat-card" aria-live="polite">
+          <div class="stat-title">Estresse</div>
+          <div class="stat-value" id="stress-level">-</div>
+        </div>
+        <div class="stat-card" aria-live="polite">
+          <div class="stat-title">Ansiedade</div>
+          <div class="stat-value" id="anxiety-level">-</div>
+        </div>
+        <div class="stat-card" aria-live="polite">
+          <div class="stat-title">Depressão</div>
+          <div class="stat-value" id="depression-level">-</div>
+        </div>
+      </div>
+
+      <h3 class="phase-title" style="margin-top:8px">Suas escolhas</h3>
+      <div id="choices-summary"><p>Ainda não foram feitas escolhas.</p></div>
+      <button class="btn btn-secondary" id="save-progress-btn" style="margin-top:14px;width:100%">Salvar progresso</button>
+      <button class="btn btn-secondary" id="load-progress-btn" style="margin-top:8px;width:100%">Carregar progresso</button>
+      <button class="btn btn-secondary" id="clear-progress-btn" style="margin-top:8px;width:100%">Limpar progresso</button>
+    </aside>
+
+    <main class="main-content">
+      <!-- INTRO -->
+      <section id="intro-screen">
+        <div class="narrative">
+          <h2>Bem-vindo(a)!</h2>
+          <p>Esta versão inclui <strong>Fase de Diagnóstico</strong> com dados reais do jogador e a <strong>Fase de Simulação</strong> de prática de artesanato terapêutico. Ao final, você verá o <em>antes vs. depois</em> com modelo matemático de redução.</p>
+        </div>
+        <button class="btn" id="start-btn" aria-label="Iniciar Diagnóstico">Iniciar Diagnóstico</button>
+      </section>
+
+      <!-- DIAGNÓSTICO -->
+      <section id="diagnostic-screen" class="hidden">
+        <div class="narrative">
+          <h2>Fase 1 — Diagnóstico</h2>
+          <p>Ajuste os controles de acordo com sua percepção atual.</p>
+        </div>
+
+        <div class="diagnostic-question">
+          <h3>1) Nível de Estresse</h3>
+          <div class="slider-container">
+            <input type="range" min="0" max="100" value="50" class="slider" id="stress-slider" aria-label="Nível de Estresse">
+            <div class="slider-labels"><span>Nenhum</span><span>Moderado</span><span>Extremo</span></div>
+          </div>
+          <div>Valor: <span id="stress-value">50</span>%</div>
+        </div>
+
+        <div class="diagnostic-question">
+          <h3>2) Nível de Ansiedade</h3>
+          <div class="slider-container">
+            <input type="range" min="0" max="100" value="50" class="slider" id="anxiety-slider" aria-label="Nível de Ansiedade">
+            <div class="slider-labels"><span>Rara</span><span>Média</span><span>Frequente</span></div>
+          </div>
+          <div>Valor: <span id="anxiety-value">50</span>%</div>
+        </div>
+
+        <div class="diagnostic-question">
+          <h3>3) Nível de Depressão</h3>
+          <div class="slider-container">
+            <input type="range" min="0" max="100" value="50" class="slider" id="depression-slider" aria-label="Nível de Depressão">
+            <div class="slider-labels"><span>Ótimo</span><span>Regular</span><span>Baixo</span></div>
+          </div>
+          <div>Valor: <span id="depression-value">50</span>%</div>
+        </div>
+
+        <div class="diagnostic-question">
+          <h3>4) Experiência prévia com artesanato</h3>
+          <label><input type="radio" name="experience" value="0" checked/> Nenhuma</label><br/>
+          <label><input type="radio" name="experience" value="1"/> Pouca</label><br/>
+          <label><input type="radio" name="experience" value="2"/> Moderada</label><br/>
+          <label><input type="radio" name="experience" value="3"/> Muita</label>
+        </div>
+
+        <button class="btn" id="save-diagnostic-btn">Salvar Diagnóstico e Continuar</button>
+      </section>
+
+      <!-- RESULTADOS DO DIAGNÓSTICO -->
+      <section id="diagnostic-results-screen" class="hidden">
+        <div class="narrative">
+          <h2>Relatório de Diagnóstico</h2>
+          <p>Seus indicadores iniciais:</p>
+          <div class="report-comparison">
+            <div class="report-card">
+              <div class="metric"><span>Estresse</span><span class="metric-value" id="diagnostic-stress">-</span></div>
+              <div class="metric"><span>Ansiedade</span><span class="metric-value" id="diagnostic-anxiety">-</span></div>
+              <div class="metric"><span>Depressão</span><span class="metric-value" id="diagnostic-depression">-</span></div>
+              <div class="metric"><span>Experiência</span><span class="metric-value" id="diagnostic-experience">-</span></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn" id="start-simulation-btn">Iniciar Simulação</button>
+      </section>
+
+      <!-- SIMULAÇÃO -->
+      <section id="simulation-screen" class="hidden">
+        <div class="narrative">
+          <h2>Fase 2 — Simulação</h2>
+          <p>Faça suas escolhas. Cada opção rende <strong>Essências</strong> e contribui de forma diferente para reduzir Estresse, Ansiedade e Depressão.</p>
+        </div>
+        <div id="simulation-phase-container"></div>
+
+        <div class="activity-log" id="activity-log" aria-live="polite">
+          <h3>Registro de Atividades</h3>
+          <div id="log-entries"></div>
+        </div>
+      </section>
+
+      <!-- RESULTADO FINAL -->
+      <section id="final-results-screen" class="hidden results-screen">
+        <h2>Jornada Concluída!</h2>
+        <div class="narrative">
+          <p>Veja abaixo seu <strong>antes vs. depois</strong> com o impacto das escolhas.</p>
+        </div>
+
+        <div class="essence-count" id="final-essence-count">0</div>
+        <div>Essências de Harmonia Coletadas</div>
+
+        <div class="report-comparison">
+          <div class="report-card">
+            <h3>Relatório Inicial</h3>
+            <div class="metric"><span>Estresse</span><span class="metric-value" id="initial-stress">-</span></div>
+            <div class="metric"><span>Ansiedade</span><span class="metric-value" id="initial-anxiety">-</span></div>
+            <div class="metric"><span>Depressão</span><span class="metric-value" id="initial-depression">-</span></div>
+          </div>
+          <div class="report-card">
+            <h3>Relatório Final</h3>
+            <div class="metric"><span>Estresse</span><span class="metric-value" id="final-stress">-</span></div>
+            <div class="metric"><span>Ansiedade</span><span class="metric-value" id="final-anxiety">-</span></div>
+            <div class="metric"><span>Depressão</span><span class="metric-value" id="final-depression">-</span></div>
+          </div>
+        </div>
+
+        <div class="simulation-results">
+          <div class="simulation-card">
+            <h3>Redução do Estresse</h3>
+            <div class="simulation-value" id="stress-reduction">-</div>
+          </div>
+          <div class="simulation-card">
+            <h3>Redução da Ansiedade</h3>
+            <div class="simulation-value" id="anxiety-reduction">-</div>
+          </div>
+          <div class="simulation-card">
+            <h3>Redução da Depressão</h3>
+            <div class="simulation-value" id="depression-reduction">-</div>
+          </div>
+        </div>
+
+        <div class="narrative">
+          <h3>Insight</h3>
+          <p id="impact-description">Sua socialização elevada e foco na manualidade contemplativa geraram os maiores ganhos.</p>
+        </div>
+
+        <button class="btn" id="restart-btn">Refazer Jornada</button>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+// ---------- Estado do jogo ----------
+const gameData = {
+  currentScreen: 'intro',
+  diagnostic: { stress:50, anxiety:50, depression:50, experience:0 },
+  simulation: { currentPhase:0, selectedOptions:[], essenceCount:0, activityLog:[] },
+  // Pesos por opção para indicadores (soma em pontos "específicos" por indicador)
+  // Cada opção tem: essence (moeda global) e weights {s,a,d} para (stress, anxiety, depression)
+  phases: [
+    {
+      title: "Escolha do Tipo de Artesanato",
+      description: "Selecione até 3 tipos de obras.",
+      type: "multiple", maxChoices: 3,
+      options: [
+        { id:1,  name:"Tecelagem da Alma", icon:"✨", desc:"Macramê e fios", essence:2, w:{s:1.0, a:1.2, d:0.8} },
+        { id:2,  name:"Madeira dos Ancestrais", icon:"🔥", desc:"Entalhe em madeira", essence:3, w:{s:1.4, a:0.8, d:1.0} },
+        { id:3,  name:"Fios do Tempo", icon:"🌊", desc:"Renda Renascença", essence:2, w:{s:1.0, a:1.0, d:1.0} },
+        { id:4,  name:"Luz Interior", icon:"💎", desc:"Joias semipreciosas", essence:3, w:{s:0.8, a:1.1, d:1.3} },
+        { id:5,  name:"Cores do Espírito", icon:"🌀", desc:"Pinturas e colagens", essence:2, w:{s:0.9, a:1.2, d:1.1} },
+        { id:6,  name:"Renascimento Verde", icon:"🌿", desc:"Arte com resíduos", essence:4, w:{s:1.5, a:1.0, d:1.2} },
+        { id:7,  name:"Brinquedos do Coração", icon:"🎠", desc:"Brinquedos artesanais", essence:3, w:{s:1.2, a:1.1, d:1.4} },
+        { id:8,  name:"Objetos da Memória", icon:"🏺", desc:"Decoração artesanal", essence:2, w:{s:1.0, a:0.9, d:1.1} },
+        { id:9,  name:"Raízes do Vínculo", icon:"🔗", desc:"Crochê/bordado cultural", essence:2, w:{s:0.9, a:1.0, d:1.4} },
+        { id:10, name:"Engrenagens do Cuidado", icon:"⚙️", desc:"Objetos utilitários", essence:3, w:{s:1.3, a:1.1, d:0.9} }
+      ]
+    },
+    {
+      title: "Processos Criativos",
+      description: "Selecione 2 processos criativos.",
+      type: "multiple", maxChoices: 2,
+      options: [
+        { id:11, name:"Manualidade Contemplativa", icon:"🖐️", desc:"Foco e respiração", essence:3, w:{s:1.2, a:1.8, d:0.9} },
+        { id:12, name:"Explosão Artística", icon:"🎨", desc:"Expressão livre", essence:2, w:{s:0.8, a:1.0, d:1.2} },
+        { id:13, name:"Planejamento Funcional", icon:"📐", desc:"Estrutura/organização", essence:2, w:{s:1.5, a:0.9, d:0.8} },
+        { id:14, name:"Experimentação Digital", icon:"💻", desc:"Ferramentas digitais", essence:3, w:{s:1.0, a:1.1, d:1.0} },
+        { id:15, name:"Criação Intuitiva", icon:"🧘", desc:"Intuição guiando", essence:4, w:{s:1.3, a:1.6, d:1.1} },
+        { id:16, name:"Pesquisa Simbólica", icon:"📖", desc:"Significados/mitos", essence:3, w:{s:1.0, a:1.0, d:1.4} },
+        { id:17, name:"Teatro do Artesanato", icon:"🎭", desc:"Performance", essence:2, w:{s:0.8, a:1.0, d:1.2} },
+        { id:18, name:"Artesanato como Registro", icon:"📸", desc:"Documentação", essence:2, w:{s:1.0, a:0.9, d:1.0} },
+        { id:19, name:"Co-criação com Histórias", icon:"💬", desc:"Baseado em narrativas", essence:4, w:{s:1.1, a:1.3, d:1.7} },
+        { id:20, name:"Ciclo Criativo Repetitivo", icon:"🔄", desc:"Rotina meditativa", essence:3, w:{s:1.6, a:1.4, d:0.9} }
+      ]
+    },
+    {
+      title: "Socialização da Experiência",
+      description: "Escolha 2 a 3 formas de socialização.",
+      type: "multiple", maxChoices: 3,
+      options: [
+        { id:21, name:"Compartilhar Pesquisas", icon:"🔍", desc:"Divulgar aprendizados", essence:2, w:{s:1.0, a:1.0, d:1.1} },
+        { id:22, name:"Planejar com o Coletivo", icon:"🧠", desc:"Criação colaborativa", essence:3, w:{s:1.2, a:1.1, d:1.3} },
+        { id:23, name:"Oficina Interativa", icon:"✋", desc:"Workshop prático", essence:4, w:{s:1.3, a:1.3, d:1.5} },
+        { id:24, name:"Exposição Comunitária", icon:"🖼️", desc:"Mostrar o trabalho", essence:3, w:{s:1.0, a:1.0, d:1.4} },
+        { id:25, name:"Feira Afetiva", icon:"🛍️", desc:"Vendas locais", essence:2, w:{s:1.1, a:1.0, d:1.2} },
+        { id:26, name:"Lives de Criação", icon:"📹", desc:"Compartilhar online", essence:3, w:{s:1.0, a:1.1, d:1.3} },
+        { id:27, name:"Círculo de Histórias", icon:"🗣️", desc:"Significados da obra", essence:4, w:{s:1.0, a:1.2, d:1.8} },
+        { id:28, name:"Presentear com Significado", icon:"🎁", desc:"Doar com afeto", essence:3, w:{s:1.0, a:1.1, d:1.6} },
+        { id:29, name:"Duplas Criativas", icon:"👥", desc:"Mestre-aprendiz", essence:4, w:{s:1.2, a:1.3, d:1.6} },
+        { id:30, name:"Intercâmbio Geracional", icon:"🤝", desc:"Troca entre gerações", essence:5, w:{s:1.1, a:1.2, d:1.9} }
+      ]
+    }
+  ]
+};
+
+// ---------- DOM ----------
+const screens = {
+  intro: document.getElementById('intro-screen'),
+  diagnostic: document.getElementById('diagnostic-screen'),
+  diagnosticResults: document.getElementById('diagnostic-results-screen'),
+  simulation: document.getElementById('simulation-screen'),
+  finalResults: document.getElementById('final-results-screen')
+};
+const buttons = {
+  start: document.getElementById('start-btn'),
+  saveDiagnostic: document.getElementById('save-diagnostic-btn'),
+  startSimulation: document.getElementById('start-simulation-btn'),
+  restart: document.getElementById('restart-btn'),
+  saveProgress: document.getElementById('save-progress-btn'),
+  loadProgress: document.getElementById('load-progress-btn'),
+  clearProgress: document.getElementById('clear-progress-btn')
+};
+const diagnosticSliders = {
+  stress: document.getElementById('stress-slider'),
+  anxiety: document.getElementById('anxiety-slider'),
+  depression: document.getElementById('depression-slider')
+};
+const diagnosticValues = {
+  stress: document.getElementById('stress-value'),
+  anxiety: document.getElementById('anxiety-value'),
+  depression: document.getElementById('depression-value')
+};
+const progressElements = {
+  fill: document.getElementById('progress-fill'),
+  percent: document.getElementById('progress-percent')
+};
+const metricDisplays = {
+  stress: document.getElementById('stress-level'),
+  anxiety: document.getElementById('anxiety-level'),
+  depression: document.getElementById('depression-level'),
+  essence: document.getElementById('essence-count')
+};
+const diagnosticDisplays = {
+  stress: document.getElementById('diagnostic-stress'),
+  anxiety: document.getElementById('diagnostic-anxiety'),
+  depression: document.getElementById('diagnostic-depression'),
+  experience: document.getElementById('diagnostic-experience')
+};
+const finalDisplays = {
+  initialStress: document.getElementById('initial-stress'),
+  initialAnxiety: document.getElementById('initial-anxiety'),
+  initialDepression: document.getElementById('initial-depression'),
+  finalStress: document.getElementById('final-stress'),
+  finalAnxiety: document.getElementById('final-anxiety'),
+  finalDepression: document.getElementById('final-depression'),
+  stressReduction: document.getElementById('stress-reduction'),
+  anxietyReduction: document.getElementById('anxiety-reduction'),
+  depressionReduction: document.getElementById('depression-reduction'),
+  finalEssence: document.getElementById('final-essence-count'),
+  impact: document.getElementById('impact-description')
+};
+const simulationContainer = document.getElementById('simulation-phase-container');
+const activityLog = document.getElementById('log-entries');
+const choicesSummary = document.getElementById('choices-summary');
+
+// ---------- Inicialização ----------
+initGame();
+function initGame(){
+  buttons.start.addEventListener('click', showDiagnosticScreen);
+  buttons.saveDiagnostic.addEventListener('click', saveDiagnostic);
+  buttons.startSimulation.addEventListener('click', startSimulation);
+  buttons.restart.addEventListener('click', restartGame);
+  buttons.saveProgress.addEventListener('click', saveToLocal);
+  buttons.loadProgress.addEventListener('click', loadFromLocal);
+  buttons.clearProgress.addEventListener('click', clearLocal);
+
+  for(const [metric, slider] of Object.entries(diagnosticSliders)){
+    slider.addEventListener('input', function(){
+      diagnosticValues[metric].textContent = this.value;
+    });
+  }
+  updateMetricDisplays();
+}
+
+// ---------- Navegação ----------
+function hideAllScreens(){
+  Object.values(screens).forEach(el=>el.classList.add('hidden'));
+}
+function updateProgress(p){
+  progressElements.fill.style.width = p + '%';
+  progressElements.percent.textContent = p + '%';
+}
+function updateMetricDisplays(){
+  metricDisplays.stress.textContent = gameData.diagnostic.stress + '%';
+  metricDisplays.anxiety.textContent = gameData.diagnostic.anxiety + '%';
+  metricDisplays.depression.textContent = gameData.diagnostic.depression + '%';
+  metricDisplays.essence.textContent = gameData.simulation.essenceCount;
+}
+
+// ---------- DIAGNÓSTICO ----------
+function showDiagnosticScreen(){
+  hideAllScreens();
+  screens.diagnostic.classList.remove('hidden');
+  gameData.currentScreen = 'diagnostic';
+  updateProgress(20);
+}
+function saveDiagnostic(){
+  gameData.diagnostic.stress    = parseInt(diagnosticSliders.stress.value);
+  gameData.diagnostic.anxiety   = parseInt(diagnosticSliders.anxiety.value);
+  gameData.diagnostic.depression= parseInt(diagnosticSliders.depression.value);
+  const exp = document.querySelector('input[name="experience"]:checked');
+  gameData.diagnostic.experience = parseInt(exp.value);
+
+  diagnosticDisplays.stress.textContent = gameData.diagnostic.stress + '%';
+  diagnosticDisplays.anxiety.textContent = gameData.diagnostic.anxiety + '%';
+  diagnosticDisplays.depression.textContent = gameData.diagnostic.depression + '%';
+  diagnosticDisplays.experience.textContent = ["Nenhuma","Pouca","Moderada","Muita"][gameData.diagnostic.experience];
+
+  updateMetricDisplays();
+
+  hideAllScreens();
+  screens.diagnosticResults.classList.remove('hidden');
+  gameData.currentScreen = 'diagnosticResults';
+  updateProgress(45);
+}
+
+// ---------- SIMULAÇÃO ----------
+function startSimulation(){
+  hideAllScreens();
+  screens.simulation.classList.remove('hidden');
+  gameData.currentScreen = 'simulation';
+  updateProgress(55);
+  gameData.simulation.currentPhase = 0;
+  gameData.simulation.selectedOptions = [];
+  gameData.simulation.essenceCount = 0;
+  activityLog.innerHTML = '';
+  loadSimulationPhase();
+}
+function loadSimulationPhase(){
+  const phase = gameData.phases[gameData.simulation.currentPhase];
+  simulationContainer.innerHTML = `
+    <div class="narrative">
+      <h3>Fase ${gameData.simulation.currentPhase+1}: ${phase.title}</h3>
+      <p>${phase.description} <br><small>Máx. de escolhas: ${phase.maxChoices}</small></p>
+    </div>
+    <div class="choices-container" id="simulation-choices"></div>
+    <button class="btn" id="next-phase-btn" disabled>Continuar</button>
+  `;
+  const choicesContainer = document.getElementById('simulation-choices');
+  const nextBtn = document.getElementById('next-phase-btn');
+
+  phase.options.forEach(option=>{
+    const card = document.createElement('button');
+    card.className = 'choice-card';
+    card.setAttribute('type','button');
+    card.setAttribute('aria-pressed','false');
+    card.innerHTML = `
+      <div class="choice-icon">${option.icon}</div>
+      <h4>${option.name}</h4>
+      <p>${option.desc}</p>
+      <small>+${option.essence} Essências</small>
+    `;
+    card.addEventListener('click',()=>toggleSimulationOption(option, card, phase, nextBtn));
+    choicesContainer.appendChild(card);
+  });
+
+  nextBtn.addEventListener('click', goToNextSimulationPhase);
+}
+function toggleSimulationOption(option, card, phase, nextBtn){
+  if(!gameData.simulation.selectedOptions[gameData.simulation.currentPhase]){
+    gameData.simulation.selectedOptions[gameData.simulation.currentPhase] = { phase: phase.title, options: [] };
+  }
+  const selected = gameData.simulation.selectedOptions[gameData.simulation.currentPhase].options;
+  const idx = selected.findIndex(o=>o.id===option.id);
+  if(idx === -1){
+    if(selected.length < phase.maxChoices){
+      selected.push(option);
+      card.classList.add('selected');
+      card.setAttribute('aria-pressed','true');
+      addToActivityLog(`Selecionou: ${option.icon} ${option.name}`, 'positive');
+    }
+  }else{
+    selected.splice(idx,1);
+    card.classList.remove('selected');
+    card.setAttribute('aria-pressed','false');
+    addToActivityLog(`Removeu: ${option.icon} ${option.name}`, 'negative');
+  }
+  nextBtn.disabled = selected.length === 0;
+  updateChoicesSummary();
+}
+function goToNextSimulationPhase(){
+  const phase = gameData.phases[gameData.simulation.currentPhase];
+  const selected = gameData.simulation.selectedOptions[gameData.simulation.currentPhase].options;
+  let phaseEssence = 0;
+  selected.forEach(opt=>phaseEssence += opt.essence);
+  gameData.simulation.essenceCount += phaseEssence;
+  metricDisplays.essence.textContent = gameData.simulation.essenceCount;
+  addToActivityLog(`Fase ${gameData.simulation.currentPhase+1} concluída: +${phaseEssence} Essências`, 'positive');
+
+  // Próxima fase ou finaliza
+  if(gameData.simulation.currentPhase < gameData.phases.length-1){
+    gameData.simulation.currentPhase++;
+    updateProgress(55 + Math.floor((gameData.simulation.currentPhase)/ (gameData.phases.length-1) * 35));
+    loadSimulationPhase();
+  }else{
+    // Finaliza simulação -> calcula relatório final
+    finalizeSimulation();
+  }
+}
+function addToActivityLog(text, cls=''){
+  const item = document.createElement('div');
+  item.className = 'log-entry ' + cls;
+  item.textContent = text;
+  activityLog.appendChild(item);
+  activityLog.scrollTop = activityLog.scrollHeight;
+}
+function updateChoicesSummary(){
+  const blocks = [];
+  gameData.simulation.selectedOptions.forEach((sel, idx)=>{
+    if(!sel) return;
+    const chips = sel.options.map(o=>`<span class="chip"><span>${o.icon}</span>${o.name}<small>+${o.essence}</small></span>`).join('');
+    blocks.push(`<div style="margin-bottom:6px"><strong>Fase ${idx+1}:</strong> ${chips || 'Sem escolhas'}</div>`);
+  });
+  choicesSummary.innerHTML = blocks.length ? blocks.join('') : '<p>Ainda não foram feitas escolhas.</p>';
+}
+
+// ---------- Modelo matemático ----------
+// Retornos decrescentes por indicador com pesos específicos (k) e teto máximo por sessão
+const REDUCTION_MODEL = {
+  stress:   { k: 0.14, cap: 35 },
+  anxiety:  { k: 0.18, cap: 35 },
+  depression:{ k: 0.16, cap: 35 }
+};
+// Afinidades extras (sinergias) simples entre opções (ids) — exemplo didático
+const SYNERGIES = [
+  // Manualidade (11) + Círculo de Histórias (27) => bônus ansiedade e depressão
+  { ids:[11,27], bonus:{ a:4, d:4 } },
+  // Planejamento (13) + Ciclo Repetitivo (20) => bônus estresse
+  { ids:[13,20], bonus:{ s:5 } },
+  // Tecelagem (1) + Raízes do Vínculo (9) => bônus depressão
+  { ids:[1,9], bonus:{ d:3 } },
+];
+
+function finalizeSimulation(){
+  // Soma de essências por indicador (a partir de weights)
+  let Es=0,Ea=0,Ed=0;
+  const allSelected = gameData.simulation.selectedOptions.flatMap(sel=>sel? sel.options: []);
+
+  allSelected.forEach(opt=>{
+    Es += opt.w.s;
+    Ea += opt.w.a;
+    Ed += opt.w.d;
+  });
+
+  // Aplicar sinergias
+  SYNERGIES.forEach(syn=>{
+    const hasAll = syn.ids.every(id => allSelected.find(o=>o.id===id));
+    if(hasAll){
+      if(syn.bonus.s) Es += syn.bonus.s;
+      if(syn.bonus.a) Ea += syn.bonus.a;
+      if(syn.bonus.d) Ed += syn.bonus.d;
+    }
+  });
+
+  // Ajuste por experiência prévia (facilita a prática)
+  const exp = gameData.diagnostic.experience; // 0..3
+  const expFactor = [0.0, 0.5, 1.0, 1.5][exp]; // bônus leve
+  Es += expFactor; Ea += expFactor; Ed += expFactor;
+
+  // Função de redução: cap * (1 - e^(-k * E))
+  function reduction(ind, E){
+    const {k,cap} = REDUCTION_MODEL[ind];
+    return cap * (1 - Math.exp(-k * E));
+  }
+
+  const redS = reduction('stress', Es);
+  const redA = reduction('anxiety', Ea);
+  const redD = reduction('depression', Ed);
+
+  // Valores finais (0-100), mínimo 0
+  const initS = gameData.diagnostic.stress;
+  const initA = gameData.diagnostic.anxiety;
+  const initD = gameData.diagnostic.depression;
+  const finalS = Math.max(0, +(initS - redS).toFixed(1));
+  const finalA = Math.max(0, +(initA - redA).toFixed(1));
+  const finalD = Math.max(0, +(initD - redD).toFixed(1));
+
+  // UI Final
+  hideAllScreens();
+  screens.finalResults.classList.remove('hidden');
+  gameData.currentScreen = 'finalResults';
+  updateProgress(100);
+
+  finalDisplays.finalEssence.textContent = gameData.simulation.essenceCount;
+  finalDisplays.initialStress.textContent = initS + '%';
+  finalDisplays.initialAnxiety.textContent = initA + '%';
+  finalDisplays.initialDepression.textContent = initD + '%';
+  finalDisplays.finalStress.textContent = finalS + '%';
+  finalDisplays.finalAnxiety.textContent = finalA + '%';
+  finalDisplays.finalDepression.textContent = finalD + '%';
+
+  finalDisplays.stressReduction.textContent = '-' + (initS - finalS).toFixed(1) + ' pts';
+  finalDisplays.anxietyReduction.textContent = '-' + (initA - finalA).toFixed(1) + ' pts';
+  finalDisplays.depressionReduction.textContent = '-' + (initD - finalD).toFixed(1) + ' pts';
+
+  // Insight simples
+  const topDimension = (()=>{
+    const arr = [
+      {n:'Estresse',v:Es},
+      {n:'Ansiedade',v:Ea},
+      {n:'Depressão',v:Ed},
+    ].sort((a,b)=>b.v-a.v)[0].n;
+    return topDimension;
+  })();
+  finalDisplays.impact.textContent = `O maior impacto ocorreu sobre "${topDimension}". Combinações e sinergias das suas escolhas potencializaram o resultado.`;
+}
+
+// ---------- Persistência ----------
+function saveToLocal(){
+  const payload = JSON.stringify(gameData);
+  localStorage.setItem('criador_interior_save', payload);
+  addToActivityLog('Progresso salvo no dispositivo.', 'positive');
+}
+function loadFromLocal(){
+  const raw = localStorage.getItem('criador_interior_save');
+  if(!raw){ addToActivityLog('Nenhum progresso salvo encontrado.', 'negative'); return; }
+  try{
+    const data = JSON.parse(raw);
+    Object.assign(gameData, data);
+    // Reidrata UI básica
+    updateMetricDisplays();
+    updateChoicesSummary();
+    addToActivityLog('Progresso carregado. Você pode continuar de onde parou.', 'positive');
+  }catch(e){
+    addToActivityLog('Falha ao carregar progresso.', 'negative');
+  }
+}
+function clearLocal(){
+  localStorage.removeItem('criador_interior_save');
+  addToActivityLog('Progresso limpo do dispositivo.', 'negative');
+}
+
+// ---------- Reiniciar ----------
+function restartGame(){
+  gameData.currentScreen = 'intro';
+  gameData.diagnostic = { stress:50, anxiety:50, depression:50, experience:0 };
+  gameData.simulation = { currentPhase:0, selectedOptions:[], essenceCount:0, activityLog:[] };
+  choicesSummary.innerHTML = '<p>Ainda não foram feitas escolhas.</p>';
+  activityLog.innerHTML = '';
+  updateMetricDisplays();
+  hideAllScreens();
+  screens.intro.classList.remove('hidden');
+  updateProgress(0);
+}
+</script>
+</body>
+</html>
