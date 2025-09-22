@@ -1,0 +1,72 @@
+Advergames são jogos que integram em seu design uma pesquisa (de opinião, de perfil de usuário, de conhecimentos, etc) e uma campanha de marketing e vendas de uma marca (Ford, McDonalds, SEBRAE, etc) , de um produto (carro, sanduiche, roupa, imóvel, etc), de um serviço (atendimento de um  restaurante, limpeza urbana de uma cidade, etc), ou de um valor intangível (orgulho de ser campinense, torcer por um time de futebol, saudade de um evento, etc), com o objetivo de convencer o jogador a se engajar com essa uma marca, produto, serviço ou valor intangível.
+
+A pesquisa e a campanha podem ser executadas dentro da narrativa do jogo, na mecânica, nas ações e atitudes de um personagem, nos elementos dos cenários, etc.
+
+Segue um exemplo de uma plataforma de jogos simples para a prática do advergame:
+
+https://www.instagram.com/p/DK9v38Zgo_f/?igsh=MTBpOHI1bWRxczZiZA%3D%3D
+
+1. Pesquise outros exemplos e registre aqui as respectivas fontes.
+
+2. Com base no exemplo acima crie um advergame para eventos que use interface de captura de movimentos e/ou interface de voz para evitar qualquer contato do público alvo com o equipamento. Defina 1) objeto da pesquisa e do marketing, b) a narrativa com tema, história e personagens, c) a mecânica ou as mecânicas do jogo, d) os níveis e cenários com suas respectivas linguagens gráficas, e) as interfaces necessárias para interação sem contato, e e) a linguagem de áudio
+
+3. Faça um protótipo do seu jogo e teste com usuários reais
+
+4. Grave um vídeo do seu teste mostrando a cena da interação do jogador e a face do jogador.
+
+O Jogo deve atender os seguintes critérios que definem um advergame:
+
+CRITÉRIOS:
+
+1. Abertura. A tela de abertura é bonita e demonstra profissionalismo na UX – User Experience?
+
+2. Cliente. O jogo deixa claro quem é o cliente que convida o jogador pra jogar?
+
+3. Objeto do Marketing: O jogo deixa claro o que é o produto, serviço ou marca do cliente?
+
+4.Mensagem do Marketing. O jogo deixa claro para o jogador qual é a mensagem do seu cliente para evidenciar o valor do produto, serviço ou marca dele?
+
+5. Pesquisa do Marketing. O jogo coleta informações estratégicas sobre o perfil e sobre potencial de compras do jogador?
+
+6. Inteligência do Marketing. O jogo usa estas informações estratégicas para direcionar os desafios e as ofertas do cliente? Ex.: Se gênero feminino e idade>18, responder novas perguntas sobre moda pra ganhar descontos na seção de cosméticos.
+
+7. Ofertas do Cliente: O jogo deixa claro quais são as recompensas do jogador se ele ganhar a partida?
+
+8. Objetivo do Jogador: O jogo deixa claro o que o jogador deve fazer para ganhar o jogo e as  recompensas oferecidas pelo cliente se ele ganhar?
+
+10. Interface Sensorial. Os recursos de interação por meio dos movimentos sem toque na tela estão ativando as ações previstas na narrativa e nos objetivos do jogo?
+
+11. Jogabilidade: A mecânica está bem construída para ajudar o jogador a se divertir e ao mesmo tempo aprender sobre o produto, serviço, marca do cliente?
+
+12. Inovação da Experiência. A mecânica está personalizada para fugir do convencional das mecânicas clássicas? Ex.: Ressignificação e adaptação da mecânica do Pong para narrativas e objetivos de jogo que não são do domínio do eSport.
+
+13. Programação: Os personagens e ítens presentes na cena do jogo comportam-se corretamente em seus movimentos e nos eventos em que se tocam previstos na narrativa e nos objetivos do jogo?
+
+14. Gráficos: Os gráficos dos personagens, ítens e cenários são coerentes com a mensagem e com o estilo artístico do Jogo e têm tamanhos proporcionais na cena? (exemplos de estilo: xilogravura de cordel, futurista ou espacial, pré-histórico, clássico greco-romano, mangá, pixelado, etc)
+
+15. Áudio: O jogo tem sons adequados para os personagens e para os eventos nas cenas: trilha sonora, sons de efeitos nos eventos do jogo (quando o vilão toca a vítima ou quando o herói toca o vilão) ou vozes dos personagens?
+
+16. Uso de IA: O jogo demonstra profissionalismo no uso de ferramentas de IA para criação de seus elementos (objetos, personagens, cenários, áudios, etc)? 
+
+--------------------------------------------------------------------------------------------------
+
+
+Atividade de Recuperação da Nota das Oficinas Presenciais
+quinta, 18 Set 2025, 07:11
+Number of replies: 0
+
+Crie uma versão corrigida do seu Advergame para Eventos atendendo ao todos os critérios estudados para esse tipo de jogo.  
+
+Grave 5 vídeos de 5 usuários jogando o jogo e grave um áudio de entrevista com cada usuário respondendo as seguintes questões de avaliação do jogo:
+
+Perguntas da entrevista de avaliação:
+
+1. Você conseguiu compreender todos os atributos positivos do produto/serviço vendido pelo jogo ? Se não, porquê? 
+
+2. Você sentiu vontade de comprar o produto/serviço vendido pelo jogo? Se não, porquê? 
+
+3. O que você acha que precisa ser feito pra melhorar jogo de Advergame para Eventos que você testou? 
+
+4. Pra você, qual é o maior benefício trazido pelo jogo Advergame para Eventos que você testou?
+
+Publique aqui o código executável do jogo, os vídeos dos 5 testes e os áudios das 5 entrevistas os usuários participantes do teste.
