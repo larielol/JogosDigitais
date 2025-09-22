@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Advergame para Eventos — Prototype (Voz + Movimento)</title>
+<style>
+  :root{
+    --brand:#6a00ff; --brand2:#00d4ff; --bg:#0f1226; --text:#f2f6ff; --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(1200px 800px at 70% -10%, rgba(0,212,255,.15), transparent), linear-gradient(180deg,#0f1226,#14173a); color:var(--text); font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  .container{max-width:1100px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+  header .logo{width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;font-weight:900;color:#0f1226}
+  h1{font-size:1.6rem;margin:0}
+  .tag{font-size:.85rem;opacity:.85}
+  .grid{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-top:16px}
+  .panel{background:rgba(255,255,255,.06);backdrop-filter: blur(6px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px}
+  .panel h2{font-size:1.1rem;margin:0 0 8px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{background:linear-gradient(135deg,var(--brand),var(--brand2));border:none;color:#0f1226;font-weight:700;padding:10px 16px;border-radius:999px;cursor:pointer}
+  button:disabled{opacity:.55;cursor:not-allowed}
+  .muted{opacity:.7}
+  #gameCanvas{width:100%;height:420px;background:#0b0e20;border-radius:12px;border:1px solid rgba(255,255,255,.12)}
+  #video{display:none}
+  .chip{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:999px}
+  .pill{padding:2px 8px;border-radius:999px;font-size:.75rem}
+  .ok{background:rgba(46,204,113,.2);border:1px solid rgba(46,204,113,.45)}
+  .warn{background:rgba(241,196,15,.2);border:1px solid rgba(241,196,15,.45)}
+  .bad{background:rgba(231,76,60,.2);border:1px solid rgba(231,76,60,.45)}
+  .section{margin-top:14px}
+  .list{display:grid;gap:8px}
+  .small{font-size:.9rem}
+  .center{text-align:center}
+  #hud{display:flex;justify-content:space-between;margin-top:6px;font-weight:700}
+  .coupon{font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#fff, #c7f5ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  footer{margin:22px 0 10px;opacity:.6}
+  @media(max-width:1000px){.grid{grid-template-columns:1fr}.panel{padding:12px}}
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">AD</div>
+      <div>
+        <h1>Advergame para Eventos — <span id="brandName">[Defina o Cliente]</span></h1>
+        <div class="tag">Controle sem toque: <strong>voz</strong> + <strong>movimento</strong> (webcam)</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <div class="panel">
+        <h2>🎮 Jogo (endless runner promocional)</h2>
+        <canvas id="gameCanvas" width="900" height="420" aria-label="Cena do jogo"></canvas>
+        <video id="video" playsinline></video>
+        <div id="hud">
+          <div>Score: <span id="score">0</span></div>
+          <div>Ofertas: <span id="offersCount">0</span></div>
+          <div>Voz: <span id="asrStatus" class="pill warn">parado</span></div>
+          <div>Movimento: <span id="motionStatus" class="pill warn">desligado</span></div>
+        </div>
+        <div class="row section">
+          <button id="startGameBtn">▶️ Iniciar</button>
+          <button id="stopGameBtn" disabled>⏹️ Parar</button>
+          <button id="micBtn">🎙️ Ativar voz</button>
+          <button id="camBtn">📷 Ativar movimento</button>
+          <span class="muted small">Comandos de voz: "começar", "pular", "esquerda", "direita", "parar".</span>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>🧠 Pesquisa + Personalização</h2>
+        <div class="list small">
+          <div class="chip">🎯 Segmento: <strong id="seg">—</strong></div>
+          <div class="chip">🎁 Interesse: <strong id="interest">—</strong></div>
+          <div class="chip">📍 Cidade: <strong id="city">—</strong></div>
+          <div class="chip">🕒 Faixa de horário: <strong id="daypart">—</strong></div>
+        </div>
+        <div class="section small">
+          <p class="muted">Perguntas surgem <em>no jogo</em>. Responda por voz (ex.: "gosto de sanduíche", "prefiro promo", "Campina Grande"). O jogo ajusta desafios e ofertas.</p>
+        </div>
+        <div class="section">
+          <h3>🎫 Cupom Personalizado</h3>
+          <div id="coupon" class="coupon">—</div>
+          <div id="couponExplain" class="muted small">Ganhe score e responda às perguntas para desbloquear.</div>
+        </div>
+        <div class="section">
+          <h3>📊 Relatório (local)</h3>
+          <pre id="report" class="small" style="white-space:pre-wrap;background:rgba(255,255,255,.06);padding:10px;border-radius:8px;max-height:180px;overflow:auto">—</pre>
+          <button id="downloadBtn" disabled>📥 Baixar relatório</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel section">
+      <h2>ℹ️ Como jogar (sem toque)</h2>
+      <ul class="small">
+        <li>Diga <strong>"começar"</strong> para iniciar. Fale <strong>"pular"</strong> para saltar. Fale <strong>"esquerda/direita"</strong> para mover.</li>
+        <li>Ou mova os braços na frente da webcam: <strong>mais movimento no lado esquerdo</strong> da tela = mover esquerda; <strong>lado direito</strong> = mover direita; <strong>movimento forte</strong> = pulo.</li>
+        <li>Perguntas por voz surgem no topo. Responda naturalmente (palavras-chave são detectadas).</li>
+      </ul>
+    </div>
+
+    <footer class="container center small">Prototype v1 — Web Speech API + detecção simples de movimento por diferença de quadros (sem bibliotecas externas)</footer>
+  </div>
+
+<script>
+// ------------------------ CONFIG ------------------------
+const CONFIG = {
+  CLIENTE: "SEBRAE PB",
+  OBJETO_MARKETING: "Feira do Empreendedor 2025 — área de gastronomia",
+  OFERTAS: {
+    base: ["10% OFF", "Brinde exclusivo", "Compre 2 leve 3"],
+    gastronomia: ["Combo lanche + suco", "Degustação VIP", "Voucher R$ 15"]
+  },
+  PESQUISA: [
+    {id:"seg", q:"Você se considera estudante, empreendedor ou visitante?", keys:{estudante:"estudante", empreendedor:"empreendedor", visitante:"visitante"}},
+    {id:"interest", q:"Você prefere promoções, brindes ou experiências gastronômicas?", keys:{promo:"promo", promoção:"promo", brinde:"brinde", brindes:"brinde", gastronomia:"gastro", comida:"gastro", lanche:"gastro"}},
+    {id:"city", q:"De qual cidade você é?", keys:{}}, // livre
+    {id:"daypart", q:"Você costuma visitar eventos de manhã, tarde ou noite?", keys:{manhã:"manhã", tarde:"tarde", noite:"noite"}}
+  ],
+  SURVEY_INTERVAL: 7000, // ms entre perguntas durante o jogo
+  SCORE_FOR_COUPON: 100
+};
+document.getElementById('brandName').textContent = CONFIG.CLIENTE;
+
+// ------------------------ STATE ------------------------
+const state = {
+  running:false, lastTick:0, score:0, offersShown:0,
+  player:{x:100,y:320,w:40,h:40,vy:0,onGround:true},
+  obstacles:[],
+  asr:{enabled:false, rec:null},
+  cam:{enabled:false, stream:null, prev:null, motionLeft:0, motionRight:0},
+  survey:{answers:{}, idx:0, lastAsk:0},
+  events:[]
+};
+
+// ------------------------ CANVAS ------------------------
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+function rnd(min,max){return Math.random()*(max-min)+min;}
+
+// ------------------------ GAME LOOP ------------------------
+function startGame(){
+  if(state.running) return;
+  state.running = true;
+  state.lastTick = performance.now();
+  state.score = 0;
+  state.offersShown = 0;
+  state.obstacles = [];
+  state.survey.idx = 0; state.survey.answers = {}; state.survey.lastAsk = 0;
+  logEvent("game_start");
+  loop();
+}
+function stopGame(){
+  state.running = false;
+  logEvent("game_stop");
+  renderReport();
+}
+function loop(now=performance.now()){
+  if(!state.running) return;
+  const dt = (now - state.lastTick)/16.67; // ~frames
+  state.lastTick = now;
+
+  // Spawn obstacles
+  if(Math.random() < 0.03) {
+    state.obstacles.push({x:canvas.width+20, y:360, w:30, h:30, speed:rnd(3,6)});
+  }
+
+  // Update player physics
+  state.player.vy += 0.8; // gravity
+  state.player.y += state.player.vy;
+  if(state.player.y >= 320){ state.player.y=320; state.player.vy=0; state.player.onGround=true; }
+
+  // Update from motion
+  if(state.cam.enabled){
+    // thresholds empíricos
+    if(state.cam.motionLeft > 18) moveLeft();
+    if(state.cam.motionRight > 18) moveRight();
+    if(state.cam.motionLeft + state.cam.motionRight > 42) jump();
+  }
+
+  // Move obstacles & score
+  for(const ob of state.obstacles){
+    ob.x -= ob.speed;
+    if(ob.x + ob.w < 0) state.obstacles.shift();
+    // collision
+    if(rectsCollide(state.player, ob)){
+      // penalidade leve
+      state.score = Math.max(0, state.score - 10);
+      ob.x = -100;
+      flash("#e74c3c");
+    }
+  }
+  state.score += 1;
+  document.getElementById('score').textContent = state.score;
+
+  // Survey cadence
+  if(now - state.survey.lastAsk > CONFIG.SURVEY_INTERVAL && state.survey.idx < CONFIG.PESQUISA.length){
+    askSurvey(CONFIG.PESQUISA[state.survey.idx]);
+    state.survey.lastAsk = now;
+    state.survey.idx++;
+  }
+
+  // Offers: personalization demo
+  maybeShowOffer();
+
+  // Draw
+  draw();
+
+  requestAnimationFrame(loop);
+}
+function rectsCollide(a,b){return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;}
+function draw(){
+  // bg
+  const g = ctx.createLinearGradient(0,0,0,canvas.height);
+  g.addColorStop(0,"#111634"); g.addColorStop(1,"#0a0d21");
+  ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  // ground line
+  ctx.strokeStyle="rgba(255,255,255,.1)"; ctx.beginPath(); ctx.moveTo(0,360.5); ctx.lineTo(canvas.width,360.5); ctx.stroke();
+
+  // player
+  ctx.fillStyle="#7af";
+  ctx.fillRect(state.player.x, state.player.y, state.player.w, state.player.h);
+
+  // obstacles
+  ctx.fillStyle="#f77";
+  for(const ob of state.obstacles){ ctx.fillRect(ob.x, ob.y, ob.w, ob.h); }
+
+  // guidance text (survey)
+  if(state.pendingQuestion){
+    ctx.fillStyle="#fff"; ctx.font="16px system-ui"; 
+    ctx.fillText("Pergunta: "+state.pendingQuestion, 14, 24);
+  }
+}
+
+function moveLeft(){ state.player.x = Math.max(20, state.player.x - 10); }
+function moveRight(){ state.player.x = Math.min(canvas.width-60, state.player.x + 10); }
+function jump(){
+  if(state.player.onGround){ state.player.vy = -14; state.player.onGround=false; }
+}
+function flash(color){
+  ctx.save(); ctx.globalAlpha=0.5; ctx.fillStyle=color; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.restore();
+}
+
+// ------------------------ SURVEY / PERSONALIZAÇÃO ------------------------
+function askSurvey(item){
+  state.pendingQuestion = item.q;
+  speak(item.q);
+}
+function handleAnswer(text){
+  if(!state.pendingQuestion) return;
+  const item = CONFIG.PESQUISA.find(p=>p.q===state.pendingQuestion);
+  let value = text.toLowerCase();
+  // map keys if provided
+  for(const [k,v] of Object.entries(item.keys||{})){
+    if(value.includes(k)) value = v;
+  }
+  // save
+  state.survey.answers[item.id] = value;
+  document.getElementById(item.id).textContent = value;
+  state.pendingQuestion = null;
+  // micro reward
+  state.score += 20;
+  flash("#2ecc71");
+  logEvent("survey_answer", {id:item.id, value});
+  // personalize coupon if threshold reached
+  maybeUnlockCoupon();
+}
+function maybeShowOffer(){
+  if(state.offersShown >= 3) return;
+  const hasGastro = (state.survey.answers.interest||"").includes("gastro");
+  if(state.score > (state.offersShown+1)*60){
+    const offer = hasGastro ? randFrom(CONFIG.OFERTAS.gastronomia) : randFrom(CONFIG.OFERTAS.base);
+    // show as floating toast
+    toast("Oferta: "+offer);
+    state.offersShown++;
+    document.getElementById('offersCount').textContent = state.offersShown;
+    logEvent("offer", {offer});
+  }
+}
+function maybeUnlockCoupon(){
+  if(state.score >= CONFIG.SCORE_FOR_COUPON && !state.coupon){
+    const seg = state.survey.answers.seg||"visitante";
+    const interest = state.survey.answers.interest||"promo";
+    const city = (state.survey.answers.city||"").split(" ")[0]||"PB";
+    const code = (seg[0]||"S")+ (interest[0]||"P") + "-" + city.toUpperCase() + "-" + Math.floor(1000+Math.random()*8999);
+    state.coupon = code;
+    document.getElementById('coupon').textContent = code;
+    document.getElementById('couponExplain').textContent = "Cupom gerado com base no seu perfil e desempenho.";
+    logEvent("coupon", {code});
+  }
+}
+function randFrom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+// ------------------------ VOZ (ASR + TTS) ------------------------
+const asrStatus = document.getElementById('asrStatus');
+function setupASR(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ asrStatus.textContent="indisp."; asrStatus.className="pill bad"; return; }
+  state.asr.rec = new SR();
+  state.asr.rec.lang="pt-BR";
+  state.asr.rec.continuous=true;
+  state.asr.rec.interimResults=false;
+  state.asr.rec.onresult = e => {
+    const t = e.results[e.results.length-1][0].transcript.trim();
+    onSpeech(t);
+  };
+  state.asr.rec.onend = () => { if(state.asr.enabled) state.asr.rec.start(); };
+}
+function onSpeech(text){
+  asrStatus.textContent="ouvindo";
+  asrStatus.className="pill ok";
+  const tx = text.toLowerCase();
+  if(tx.includes("começar")) startGame();
+  if(tx.includes("pular")) jump();
+  if(tx.includes("esquerda")) moveLeft();
+  if(tx.includes("direita")) moveRight();
+  if(tx.includes("parar")) stopGame();
+  // survey capture
+  handleAnswer(tx);
+  setTimeout(()=>{ asrStatus.textContent="ouvindo"; }, 500);
+}
+function speak(text){
+  if(!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang="pt-BR"; u.rate=1.0;
+  window.speechSynthesis.speak(u);
+}
+
+// ------------------------ MOVIMENTO (Webcam diferença de quadros) ------------------------
+const motionStatus = document.getElementById('motionStatus');
+const video = document.getElementById('video');
+const motionCanvas = document.createElement('canvas');
+const mctx = motionCanvas.getContext('2d');
+
+async function enableCam(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    video.srcObject = stream;
+    await video.play();
+    state.cam.enabled = true;
+    state.cam.stream = stream;
+    motionStatus.textContent="ligado"; motionStatus.className="pill ok";
+    analyzeMotion();
+  }catch(e){
+    motionStatus.textContent="erro"; motionStatus.className="pill bad";
+  }
+}
+function disableCam(){
+  if(state.cam.stream){
+    state.cam.stream.getTracks().forEach(t=>t.stop());
+  }
+  state.cam.enabled=false; motionStatus.textContent="desligado"; motionStatus.className="pill warn";
+}
+function analyzeMotion(){
+  if(!state.cam.enabled) return;
+  const w = 160, h = 90;
+  motionCanvas.width = w; motionCanvas.height = h;
+  mctx.drawImage(video, 0,0,w,h);
+  const frame = mctx.getImageData(0,0,w,h);
+  if(!state.cam.prev){ state.cam.prev = frame; requestAnimationFrame(analyzeMotion); return; }
+  let left=0,right=0;
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x+=2){ // amostra
+      const i = (y*w + x)*4;
+      const d = Math.abs(frame.data[i]-state.cam.prev.data[i]) + Math.abs(frame.data[i+1]-state.cam.prev.data[i+1]) + Math.abs(frame.data[i+2]-state.cam.prev.data[i+2]);
+      if(x < w/2) left += d; else right += d;
+    }
+  }
+  state.cam.motionLeft = left/(w*h/2)/3;
+  state.cam.motionRight = right/(w*h/2)/3;
+  state.cam.prev = frame;
+  requestAnimationFrame(analyzeMotion);
+}
+
+// ------------------------ REPORT ------------------------
+function logEvent(type,payload={}){
+  state.events.push({t:Date.now(), type, ...payload});
+}
+function renderReport(){
+  const r = {
+    cliente: CONFIG.CLIENTE,
+    objeto: CONFIG.OBJETO_MARKETING,
+    profile: state.survey.answers,
+    score: state.score,
+    coupon: state.coupon||null,
+    offersShown: state.offersShown,
+    events: state.events.slice(-50)
+  };
+  document.getElementById('report').textContent = JSON.stringify(r,null,2);
+  document.getElementById('downloadBtn').disabled=false;
+  localStorage.setItem("advergame_event_report", JSON.stringify(r));
+}
+function downloadReport(){
+  const data = document.getElementById('report').textContent;
+  const blob = new Blob([data], {type:"application/json"});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = "advergame_report.json";
+  a.click();
+}
+
+// ------------------------ UI BINDINGS ------------------------
+document.getElementById('startGameBtn').onclick = startGame;
+document.getElementById('stopGameBtn').onclick = stopGame;
+document.getElementById('downloadBtn').onclick = downloadReport;
+
+document.getElementById('micBtn').onclick = ()=>{
+  if(!state.asr.rec) setupASR();
+  if(!state.asr.enabled){ state.asr.enabled=true; state.asr.rec.start(); asrStatus.textContent="ouvindo"; asrStatus.className="pill ok"; logEvent("asr_on"); }
+  else { state.asr.enabled=false; state.asr.rec.stop(); asrStatus.textContent="parado"; asrStatus.className="pill warn"; logEvent("asr_off"); }
+};
+document.getElementById('camBtn').onclick = ()=>{
+  if(!state.cam.enabled){ enableCam(); logEvent("cam_on"); }
+  else { disableCam(); logEvent("cam_off"); }
+};
+
+// keyboard fallback for demo
+window.addEventListener('keydown', e=>{
+  if(e.key==="ArrowLeft") moveLeft();
+  if(e.key==="ArrowRight") moveRight();
+  if(e.key===" "){ e.preventDefault(); jump(); }
+});
+
+// initial
+renderReport();
+</script>
+</body>
+</html>
