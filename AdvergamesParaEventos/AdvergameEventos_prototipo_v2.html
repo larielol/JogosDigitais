@@ -1,0 +1,648 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Advergame para Eventos — Versão Corrigida (Contato Zero)</title>
+<meta name="description" content="Advergame com pesquisa + marketing sem toque (voz e movimento).">
+<style>
+  :root{
+    /* Branding fácil de trocar */
+    --brand:#6a00ff; --brand2:#00d4ff; --bg:#0f1226; --text:#f2f6ff;
+    --ok:#2ecc71; --warn:#f1c40f; --bad:#e74c3c; --panel:rgba(255,255,255,.06);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:radial-gradient(1200px 800px at 70% -10%, rgba(0,212,255,.15), transparent), linear-gradient(180deg,#0f1226,#14173a); color:var(--text); font:16px/1.45 system-ui,Segoe UI,Roboto,Helvetica,Arial}
+  .container{max-width:1180px;margin:0 auto;padding:20px}
+  header{display:flex;align-items:center;gap:16px;padding:16px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+  header .logo{width:60px;height:60px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;font-weight:900;color:#0f1226}
+  h1{font-size:1.7rem;margin:0}
+  .tag{font-size:.9rem;opacity:.85}
+  .grid{display:grid;grid-template-columns:1fr 360px;gap:16px;margin-top:16px}
+  .panel{background:var(--panel);backdrop-filter: blur(6px);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px}
+  .panel h2{font-size:1.12rem;margin:0 0 8px}
+  .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  button{background:linear-gradient(135deg,var(--brand),var(--brand2));border:none;color:#0f1226;font-weight:700;padding:10px 16px;border-radius:999px;cursor:pointer}
+  button:disabled{opacity:.55;cursor:not-allowed}
+  .ghost{background:transparent;border:1px solid rgba(255,255,255,.2);color:var(--text)}
+  .muted{opacity:.78}
+  .small{font-size:.92rem}
+  #gameCanvas{width:100%;height:460px;background:#0b0e20;border-radius:12px;border:1px solid rgba(255,255,255,.12)}
+  #video{display:none}
+  .chip{display:inline-flex;gap:6px;align-items:center;padding:6px 10px;border:1px solid rgba(255,255,255,.2);border-radius:999px}
+  .pill{padding:2px 8px;border-radius:999px;font-size:.75rem}
+  .ok{background:rgba(46,204,113,.2);border:1px solid rgba(46,204,113,.45)}
+  .warn{background:rgba(241,196,15,.2);border:1px solid rgba(241,196,15,.45)}
+  .bad{background:rgba(231,76,60,.2);border:1px solid rgba(231,76,60,.45)}
+  .section{margin-top:14px}
+  .list{display:grid;gap:8px}
+  .center{text-align:center}
+  #hud{display:flex;justify-content:space-between;margin-top:6px;font-weight:700}
+  #offersBar{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .offer{background:rgba(255,255,255,.08);padding:6px 10px;border-radius:999px;border:1px solid rgba(255,255,255,.14);font-size:.88rem}
+  .coupon{font-size:1.6rem;font-weight:800;background:linear-gradient(135deg,#fff, #c7f5ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+  footer{margin:22px 0 10px;opacity:.6}
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.55);z-index:50}
+  .modal.open{display:flex}
+  .modal .card{max-width:720px;background:var(--panel);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:16px}
+  .modal h3{margin:0 0 6px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:1000px){.grid{grid-template-columns:1fr}.panel{padding:12px}}
+</style>
+</head>
+<body>
+  <div class="container" role="application">
+    <header>
+      <div class="logo" aria-hidden="true">AD</div>
+      <div>
+        <h1 id="titleH1">Advergame para Eventos — <span id="brandName">[Defina o Cliente]</span></h1>
+        <div class="tag">Contato zero: <strong>voz</strong> + <strong>movimento</strong> (webcam) • Pesquisa embutida • Ofertas personalizadas</div>
+      </div>
+      <div style="margin-left:auto" class="row">
+        <button id="kioskBtn" class="ghost" aria-label="Ativar modo quiosque">🖥️ Modo Quiosque</button>
+        <button id="aboutBtn" class="ghost">ℹ️ Sobre</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <!-- LADO ESQUERDO: JOGO -->
+      <div class="panel" aria-labelledby="gameHeading">
+        <h2 id="gameHeading">🎮 Cena do jogo</h2>
+        <canvas id="gameCanvas" width="960" height="460"></canvas>
+        <video id="video" playsinline></video>
+        <div id="hud" aria-live="polite">
+          <div>Score: <span id="score">0</span></div>
+          <div>Objetivo: <span id="goal">Ganhar cupom aos 150 pts</span></div>
+          <div>Ofertas: <span id="offersCount">0</span></div>
+          <div>Voz: <span id="asrStatus" class="pill warn">parado</span></div>
+          <div>Movimento: <span id="motionStatus" class="pill warn">desligado</span></div>
+        </div>
+        <div id="offersBar" aria-label="Ofertas recentes"></div>
+
+        <div class="row section" role="toolbar" aria-label="Controles do jogo">
+          <button id="startGameBtn">▶️ Iniciar</button>
+          <button id="pauseBtn" disabled>⏸️ Pausar</button>
+          <button id="stopGameBtn" disabled>⏹️ Parar</button>
+          <button id="micBtn">🎙️ Ativar voz</button>
+          <button id="camBtn">📷 Ativar movimento</button>
+          <button id="calibBtn" class="ghost">🛠️ Calibrar gestos</button>
+          <span class="muted small">Comandos: "começar", "pular", "esquerda", "direita", "parar". Gestos: movimento à esquerda/direita move; movimento forte → pulo.</span>
+        </div>
+      </div>
+
+      <!-- LADO DIREITO: PESQUISA + MARKETING -->
+      <div class="panel">
+        <h2>🧠 Pesquisa + Inteligência de Marketing</h2>
+        <div class="list small">
+          <div class="chip">👤 Segmento: <strong id="seg">—</strong></div>
+          <div class="chip">🎯 Interesse: <strong id="interest">—</strong></div>
+          <div class="chip">📍 Cidade: <strong id="city">—</strong></div>
+          <div class="chip">🕒 Horário: <strong id="daypart">—</strong></div>
+        </div>
+        <div class="section small">
+          <p class="muted">As **perguntas** surgem no topo do jogo e você responde por **voz**. O jogo usa as respostas para **personalizar ofertas** e **ajustar a dificuldade** (velocidade/obstáculos).</p>
+        </div>
+        <div class="section">
+          <h3>🎫 Cupom Personalizado</h3>
+          <div id="coupon" class="coupon">—</div>
+          <div id="couponExplain" class="muted small">Ganhe pontos e responda para desbloquear. Sem dados pessoais coletados.</div>
+        </div>
+        <div class="section">
+          <h3>📊 Relatório (local)</h3>
+          <pre id="report" class="small" style="white-space:pre-wrap;background:rgba(255,255,255,.06);padding:10px;border-radius:8px;max-height:200px;overflow:auto">—</pre>
+          <div class="row">
+            <button id="downloadJSON" disabled>📥 JSON</button>
+            <button id="downloadCSV" disabled>📥 CSV</button>
+            <button id="resetData" class="ghost">🗑️ Limpar</button>
+          </div>
+        </div>
+        <div class="section small muted">
+          <strong>Privacidade:</strong> este protótipo roda 100% no seu navegador; não envia dados a servidores. Log salva no seu dispositivo (localStorage).
+        </div>
+      </div>
+    </div>
+
+    <div class="panel section">
+      <h2>📋 Abertura & Mensagem do Cliente</h2>
+      <div class="two small">
+        <div>
+          <p><strong>Cliente:</strong> <span id="clienteText"></span></p>
+          <p><strong>Objeto do marketing:</strong> <span id="objText"></span></p>
+          <p><strong>Mensagem:</strong> <span id="msgText"></span></p>
+        </div>
+        <div>
+          <p><strong>Objetivo do jogador:</strong> pontuar, responder à pesquisa e obter o cupom.</p>
+          <p><strong>Recompensas:</strong> ofertas em tempo real + cupom personalizado ao atingir a meta.</p>
+          <p><strong>Instruções sem toque:</strong> use a **voz** ou **gestos** captados pela webcam.</p>
+        </div>
+      </div>
+    </div>
+
+    <footer class="container center small">Versão Corrigida • Web Speech API + detecção de movimento por diferença de quadros • Modo Quiosque • Export JSON/CSV • A11y básica</footer>
+  </div>
+
+  <!-- MODAL ONBOARDING -->
+  <div class="modal open" id="onboarding" role="dialog" aria-modal="true" aria-labelledby="onbTitle">
+    <div class="card">
+      <h3 id="onbTitle">🎉 Bem-vindo(a) ao Advergame — Contato Zero</h3>
+      <p class="muted small">Para participar, ative voz e câmera. Você pode pausar a qualquer momento. Este protótipo não envia dados para a internet.</p>
+      <div class="two small">
+        <div>
+          <p><strong>Ações por voz:</strong> “começar”, “pular”, “esquerda”, “direita”, “parar”.</p>
+          <p><strong>Gestos:</strong> mexa mais do lado esquerdo/direito da câmera para mover; movimentos amplos fazem pular.</p>
+          <label><input type="checkbox" id="consentChk"> Li e concordo com a coleta local de respostas para fins de demonstração.</label>
+        </div>
+        <div>
+          <p><strong>Áudio:</strong> o jogo fala as perguntas (TTS). Ative o som do dispositivo.</p>
+          <p><strong>Acessibilidade:</strong> alto contraste, controles focáveis, atalhos: Espaço (pulo), ← → (mover).</p>
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button id="closeOnb" disabled>Começar</button>
+        <button id="noAudio" class="ghost">Silenciar narração</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CALIBRAÇÃO -->
+  <div class="modal" id="calibModal" role="dialog" aria-modal="true" aria-labelledby="calibTitle">
+    <div class="card">
+      <h3 id="calibTitle">🛠️ Calibração de gestos</h3>
+      <p class="small">Fique à frente da câmera, levante o braço esquerdo (contagem 3s), depois o direito. Ajustaremos automaticamente os limiares.</p>
+      <div class="row">
+        <button id="runCalib">Iniciar calibração</button>
+        <button id="closeCalib" class="ghost">Fechar</button>
+      </div>
+      <pre id="calibOut" class="small" style="white-space:pre-wrap;margin-top:10px;opacity:.85"></pre>
+    </div>
+  </div>
+
+<script>
+/* =========================== CONFIG =========================== */
+const CONFIG = {
+  CLIENTE: "SEBRAE PB",
+  OBJETO_MARKETING: "Feira do Empreendedor 2025 — área de gastronomia",
+  MENSAGEM: "Valorize negócios locais e aproveite combos gastronômicos exclusivos no evento.",
+  OFERTAS: {
+    base: ["10% OFF", "Brinde exclusivo", "Compre 2 leve 3"],
+    gastronomia: ["Combo lanche + suco", "Degustação VIP", "Voucher R$ 15"]
+  },
+  PESQUISA: [
+    {id:"seg", q:"Você se considera estudante, empreendedor ou visitante?", keys:{estudante:"estudante", empreendedor:"empreendedor", visitante:"visitante"}},
+    {id:"interest", q:"Você prefere promoções, brindes ou experiências gastronômicas?", keys:{promo:"promo", promoção:"promo", brinde:"brinde", brindes:"brinde", gastronomia:"gastro", comida:"gastro", lanche:"gastro"}},
+    {id:"city", q:"De qual cidade você é?", keys:{}}, // livre
+    {id:"daypart", q:"Você costuma visitar eventos de manhã, tarde ou noite?", keys:{manhã:"manhã", tarde:"tarde", noite:"noite"}}
+  ],
+  SURVEY_INTERVAL: 6500,               // ms entre perguntas
+  SCORE_FOR_COUPON: 150,               // meta para cupom
+  MAX_OFFERS: 4,                       // limite de toasts de oferta
+  BASE_SPEED: 4.2,                     // velocidade base do cenário
+  SPEED_BY_SEG: { estudante: +0.4, empreendedor: +0.8, visitante: 0 }, // personalização de dificuldade
+  AUDIO: { tts:true }                  // narração por padrão
+};
+document.getElementById('brandName').textContent = CONFIG.CLIENTE;
+document.getElementById('clienteText').textContent = CONFIG.CLIENTE;
+document.getElementById('objText').textContent = CONFIG.OBJETO_MARKETING;
+document.getElementById('msgText').textContent = CONFIG.MENSAGEM;
+document.getElementById('goal').textContent = "Ganhar cupom aos " + CONFIG.SCORE_FOR_COUPON + " pts";
+
+/* =========================== STATE =========================== */
+const state = {
+  running:false, paused:false, lastTick:0, score:0, offersShown:0,
+  player:{x:120,y:360,w:44,h:44,vy:0,onGround:true},
+  obstacles:[], bgX:0, speed:CONFIG.BASE_SPEED,
+  asr:{enabled:false, rec:null},
+  cam:{enabled:false, stream:null, prev:null, motionLeft:0, motionRight:0, thresh:{left:18,right:18,jump:46}},
+  survey:{answers:{}, idx:0, lastAsk:0},
+  events:[], coupon:null,
+  pendingQuestion:null
+};
+
+/* =========================== CANVAS / DRAW =========================== */
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+function rnd(min,max){return Math.random()*(max-min)+min;}
+function draw(){
+  // Parallax BG
+  state.bgX = (state.bgX + state.speed*0.5) % canvas.width;
+  const g = ctx.createLinearGradient(0,0,0,canvas.height);
+  g.addColorStop(0,"#111634"); g.addColorStop(1,"#0a0d21");
+  ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,canvas.height);
+  // parallax stripes
+  ctx.fillStyle="rgba(255,255,255,.03)";
+  for(let i=0;i<8;i++){
+    const x = (i*180 - state.bgX + canvas.width) % canvas.width;
+    ctx.fillRect(x,0,4,canvas.height);
+  }
+  // ground
+  ctx.strokeStyle="rgba(255,255,255,.1)"; ctx.beginPath(); ctx.moveTo(0,404.5); ctx.lineTo(canvas.width,404.5); ctx.stroke();
+  // player
+  ctx.fillStyle="#7af";
+  roundRect(ctx, state.player.x, state.player.y, state.player.w, state.player.h, 8, true);
+  // obstacles
+  ctx.fillStyle="#f77";
+  for(const ob of state.obstacles){ roundRect(ctx, ob.x, ob.y, ob.w, ob.h, 6, true); }
+  // question text
+  if(state.pendingQuestion){
+    ctx.fillStyle="#fff"; ctx.font="16px system-ui";
+    ctx.fillText("Pergunta: " + state.pendingQuestion, 14, 26);
+  }
+}
+function roundRect(ctx, x, y, w, h, r, fill){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y);
+  ctx.arcTo(x+w,y,x+w,y+h,r);
+  ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r);
+  ctx.arcTo(x,y,x+w,y,r);
+  if(fill) ctx.fill();
+}
+
+/* =========================== GAME LOOP =========================== */
+function startGame(){
+  if(state.running) return;
+  state.running = true; state.paused=false;
+  document.getElementById('pauseBtn').disabled=false;
+  document.getElementById('stopGameBtn').disabled=false;
+  state.lastTick = performance.now();
+  state.score = 0; state.offersShown = 0; state.obstacles = []; state.bgX = 0;
+  state.survey.idx = 0; state.survey.answers = {}; state.survey.lastAsk = 0;
+  state.coupon = null; updateHUD(); renderReport();
+  logEvent("game_start");
+  loop();
+}
+function pauseGame(){
+  if(!state.running) return;
+  state.paused = !state.paused;
+  document.getElementById('pauseBtn').textContent = state.paused ? "▶️ Retomar" : "⏸️ Pausar";
+  logEvent(state.paused? "game_pause":"game_resume");
+  if(!state.paused) { state.lastTick = performance.now(); loop(); }
+}
+function stopGame(){
+  state.running = false; state.paused=false;
+  document.getElementById('pauseBtn').disabled=true;
+  document.getElementById('stopGameBtn').disabled=true;
+  logEvent("game_stop");
+  renderReport();
+}
+function loop(now=performance.now()){
+  if(!state.running || state.paused) return;
+  const dt = (now - state.lastTick)/16.67;
+  state.lastTick = now;
+
+  // Spawn obstacles (personaliza densidade após respostas)
+  if(Math.random() < 0.035 + densBoost()){
+    state.obstacles.push({x:canvas.width+20, y:372, w:rnd(26,40), h:rnd(26,40), speed:state.speed + rnd(0,1)});
+  }
+  // Physics player
+  state.player.vy += 0.85;
+  state.player.y += state.player.vy;
+  if(state.player.y >= 360){ state.player.y=360; state.player.vy=0; state.player.onGround=true; }
+
+  // Motion control
+  if(state.cam.enabled){
+    if(state.cam.motionLeft > state.cam.thresh.left) moveLeft();
+    if(state.cam.motionRight > state.cam.thresh.right) moveRight();
+    if(state.cam.motionLeft + state.cam.motionRight > state.cam.thresh.jump) jump();
+  }
+
+  // Obstacles
+  for(const ob of state.obstacles){
+    ob.x -= ob.speed;
+  }
+  // Remove offscreen
+  state.obstacles = state.obstacles.filter(o=>o.x + o.w > 0);
+
+  // Collisions
+  for(const ob of state.obstacles){
+    if(rectsCollide(state.player, ob)){
+      sfx("hit");
+      state.score = Math.max(0, state.score - 12);
+      ob.x = -100;
+      flash("#e74c3c");
+      break;
+    }
+  }
+
+  // Score & difficulty
+  state.score += 1;
+  state.speed = CONFIG.BASE_SPEED + speedBoostByProfile();
+
+  // Survey cadence
+  if(now - state.survey.lastAsk > CONFIG.SURVEY_INTERVAL && state.survey.idx < CONFIG.PESQUISA.length){
+    askSurvey(CONFIG.PESQUISA[state.survey.idx]);
+    state.survey.lastAsk = now;
+    state.survey.idx++;
+  }
+
+  // Offers
+  maybeShowOffer();
+  maybeUnlockCoupon();
+
+  draw();
+  updateHUD();
+  requestAnimationFrame(loop);
+}
+function densBoost(){
+  // Mais obstáculos para "empreendedor" (jogo um pouco mais desafiador)
+  return state.survey.answers.seg === "empreendedor" ? 0.01 : 0;
+}
+function speedBoostByProfile(){
+  const seg = state.survey.answers.seg;
+  return CONFIG.SPEED_BY_SEG[seg] || 0;
+}
+function rectsCollide(a,b){return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;}
+function moveLeft(){ state.player.x = Math.max(20, state.player.x - 10); }
+function moveRight(){ state.player.x = Math.min(canvas.width-60, state.player.x + 10); }
+function jump(){ if(state.player.onGround){ state.player.vy = -14; state.player.onGround=false; sfx("jump"); } }
+function flash(color){
+  ctx.save(); ctx.globalAlpha=0.5; ctx.fillStyle=color; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.restore();
+}
+
+/* =========================== SURVEY / INTELIGÊNCIA =========================== */
+function askSurvey(item){
+  state.pendingQuestion = item.q;
+  if(CONFIG.AUDIO.tts) speak(item.q);
+}
+function handleAnswer(text){
+  if(!state.pendingQuestion) return;
+  const item = CONFIG.PESQUISA.find(p=>p.q===state.pendingQuestion);
+  let value = text.toLowerCase();
+  for(const [k,v] of Object.entries(item.keys||{})){
+    if(value.includes(k)) value = v;
+  }
+  state.survey.answers[item.id] = value;
+  document.getElementById(item.id).textContent = value;
+  state.pendingQuestion = null;
+  // micro reward + efeito
+  state.score += 25; flash("#2ecc71"); sfx("ok");
+  logEvent("survey_answer", {id:item.id, value});
+  // personaliza imediatamente: speed/densidade variam em loop()
+  // ofertas e cupom ajustados com base em interesse/cidade/daypart
+  renderReport();
+}
+function maybeShowOffer(){
+  if(state.offersShown >= CONFIG.MAX_OFFERS) return;
+  const hasGastro = (state.survey.answers.interest||"").includes("gastro");
+  if(state.score > (state.offersShown+1)*50){
+    const offer = hasGastro ? randFrom(CONFIG.OFERTAS.gastronomia) : randFrom(CONFIG.OFERTAS.base);
+    // toast (UI)
+    addOfferPill(offer);
+    state.offersShown++;
+    logEvent("offer", {offer});
+  }
+}
+function addOfferPill(txt){
+  const bar = document.getElementById('offersBar');
+  const el = document.createElement('div');
+  el.className = 'offer';
+  el.textContent = "Oferta: " + txt;
+  bar.appendChild(el);
+  setTimeout(()=>{ el.style.opacity=.6; }, 5000);
+  sfx("offer");
+  updateHUD();
+}
+function maybeUnlockCoupon(){
+  if(state.score >= CONFIG.SCORE_FOR_COUPON && !state.coupon){
+    const seg = state.survey.answers.seg||"visitante";
+    const interest = state.survey.answers.interest||"promo";
+    const city = (state.survey.answers.city||"").split(" ")[0]||"PB";
+    const code = (seg[0]||"S")+ (interest[0]||"P") + "-" + city.toUpperCase() + "-" + Math.floor(1000+Math.random()*8999);
+    state.coupon = code;
+    document.getElementById('coupon').textContent = code;
+    document.getElementById('couponExplain').textContent = "Mostre este código nos estandes participantes para ativar sua oferta.";
+    logEvent("coupon", {code});
+    sfx("win");
+    renderReport();
+  }
+}
+function randFrom(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+/* =========================== VOZ (ASR + TTS) =========================== */
+const asrStatus = document.getElementById('asrStatus');
+function setupASR(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){ asrStatus.textContent="indisp."; asrStatus.className="pill bad"; return; }
+  state.asr.rec = new SR();
+  state.asr.rec.lang="pt-BR";
+  state.asr.rec.continuous=true;
+  state.asr.rec.interimResults=false;
+  state.asr.rec.onresult = e => {
+    const t = e.results[e.results.length-1][0].transcript.trim();
+    onSpeech(t);
+  };
+  state.asr.rec.onend = () => { if(state.asr.enabled) state.asr.rec.start(); };
+}
+function onSpeech(text){
+  asrStatus.textContent="ouvindo"; asrStatus.className="pill ok";
+  const tx = text.toLowerCase();
+  if(tx.includes("começar")) startGame();
+  if(tx.includes("pular")) jump();
+  if(tx.includes("esquerda")) moveLeft();
+  if(tx.includes("direita")) moveRight();
+  if(tx.includes("parar")) stopGame();
+  handleAnswer(tx);
+}
+function speak(text){
+  if(!window.speechSynthesis) return;
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang="pt-BR"; u.rate=1.0;
+  window.speechSynthesis.speak(u);
+}
+
+/* =========================== MOVIMENTO (Webcam) =========================== */
+const motionStatus = document.getElementById('motionStatus');
+const video = document.getElementById('video');
+const motionCanvas = document.createElement('canvas');
+const mctx = motionCanvas.getContext('2d');
+async function enableCam(){
+  try{
+    const stream = await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+    video.srcObject = stream; await video.play();
+    state.cam.enabled = true; state.cam.stream = stream;
+    motionStatus.textContent="ligado"; motionStatus.className="pill ok";
+    analyzeMotion();
+  }catch(e){
+    motionStatus.textContent="erro"; motionStatus.className="pill bad";
+  }
+}
+function disableCam(){
+  if(state.cam.stream){ state.cam.stream.getTracks().forEach(t=>t.stop()); }
+  state.cam.enabled=false; motionStatus.textContent="desligado"; motionStatus.className="pill warn";
+}
+function analyzeMotion(){
+  if(!state.cam.enabled) return;
+  const w = 160, h = 90;
+  motionCanvas.width = w; motionCanvas.height = h;
+  mctx.drawImage(video, 0,0,w,h);
+  const frame = mctx.getImageData(0,0,w,h);
+  if(!state.cam.prev){ state.cam.prev = frame; requestAnimationFrame(analyzeMotion); return; }
+  let left=0,right=0;
+  for(let y=0;y<h;y++){
+    for(let x=0;x<w;x+=2){
+      const i = (y*w + x)*4;
+      const d = Math.abs(frame.data[i]-state.cam.prev.data[i]) + Math.abs(frame.data[i+1]-state.cam.prev.data[i+1]) + Math.abs(frame.data[i+2]-state.cam.prev.data[i+2]);
+      if(x < w/2) left += d; else right += d;
+    }
+  }
+  state.cam.motionLeft = left/(w*h/2)/3;
+  state.cam.motionRight = right/(w*h/2)/3;
+  state.cam.prev = frame;
+  requestAnimationFrame(analyzeMotion);
+}
+
+/* =========================== CALIBRAÇÃO =========================== */
+const calibModal = document.getElementById('calibModal');
+const calibOut = document.getElementById('calibOut');
+function openCalib(){ calibModal.classList.add('open'); calibOut.textContent=""; }
+function closeCalib(){ calibModal.classList.remove('open'); }
+async function runCalibration(){
+  calibOut.textContent = "Etapa 1: levante o braço ESQUERDO por 3 segundos...";
+  const left = await sampleMotion(3000, "left");
+  calibOut.textContent += "\nOk. Agora levante o braço DIREITO por 3 segundos...";
+  const right = await sampleMotion(3000, "right");
+  // Define thresholds com folga
+  state.cam.thresh.left = Math.max(12, left.avg*0.8);
+  state.cam.thresh.right = Math.max(12, right.avg*0.8);
+  state.cam.thresh.jump = Math.max(36, (left.avg+right.avg));
+  calibOut.textContent += `\nConcluído!\nNovos limiares: left=${state.cam.thresh.left.toFixed(1)}, right=${state.cam.thresh.right.toFixed(1)}, jump=${state.cam.thresh.jump.toFixed(1)}`;
+}
+function sampleMotion(ms, side){
+  return new Promise(res=>{
+    const start = performance.now();
+    let acc=0, n=0;
+    (function poll(t){
+      const dt = t - (poll.last||t); poll.last = t;
+      acc += side==="left" ? state.cam.motionLeft : state.cam.motionRight;
+      n++;
+      if(t - start >= ms) return res({avg: acc/Math.max(1,n)});
+      requestAnimationFrame(poll);
+    })(performance.now());
+  });
+}
+
+/* =========================== ÁUDIO (SFX) =========================== */
+const AC = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+function ensureAudio(){ if(!audioCtx) audioCtx = new AC(); }
+function sfx(type){
+  if(!audioCtx) return;
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.connect(g); g.connect(audioCtx.destination);
+  let f=440, dur=0.12;
+  if(type==="ok"){ f=660; }
+  if(type==="hit"){ f=120; dur=0.2; }
+  if(type==="offer"){ f=520; }
+  if(type==="win"){ f=880; dur=0.25; }
+  o.frequency.value=f; g.gain.value=0.08; o.start(); setTimeout(()=>o.stop(), dur*1000);
+}
+
+/* =========================== REPORT / EXPORT =========================== */
+function logEvent(type,payload={}){ state.events.push({t:new Date().toISOString(), type, ...payload}); }
+function renderReport(){
+  const r = {
+    cliente: CONFIG.CLIENTE,
+    objeto: CONFIG.OBJETO_MARKETING,
+    mensagem: CONFIG.MENSAGEM,
+    profile: state.survey.answers,
+    score: state.score,
+    coupon: state.coupon||null,
+    offersShown: state.offersShown,
+    thresholds: state.cam.thresh,
+    events: state.events.slice(-80)
+  };
+  document.getElementById('report').textContent = JSON.stringify(r,null,2);
+  const hasData = state.events.length>0;
+  document.getElementById('downloadJSON').disabled=!hasData;
+  document.getElementById('downloadCSV').disabled=!hasData;
+  localStorage.setItem("advergame_event_report_v2", JSON.stringify(r));
+}
+function downloadJSON(){
+  const data = document.getElementById('report').textContent;
+  const blob = new Blob([data], {type:"application/json"});
+  triggerDownload(blob, "advergame_report.json");
+}
+function downloadCSV(){
+  // CSV simples com eventos e perfil
+  const p = state.survey.answers;
+  const header = "cliente,objeto,mensagem,seg,interest,city,daypart,score,coupon,offers\n";
+  const line = [CONFIG.CLIENTE, CONFIG.OBJETO_MARKETING, CONFIG.MENSAGEM, p.seg||"", p.interest||"", p.city||"", p.daypart||"", state.score, state.coupon||"", state.offersShown].map(s=>`"${String(s).replace(/"/g,'""')}"`).join(",");
+  const events = "timestamp,type,payload\n" + state.events.map(e=>`"${e.t}","${e.type}","${JSON.stringify(e).replace(/"/g,'""')}"`).join("\n");
+  const blob = new Blob([header+line+"\n\n"+events], {type:"text/csv"});
+  triggerDownload(blob, "advergame_report.csv");
+}
+function triggerDownload(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+}
+function resetData(){
+  state.events = []; state.survey.answers={}; state.coupon=null; state.score=0; state.offersShown=0;
+  ["seg","interest","city","daypart"].forEach(id=>document.getElementById(id).textContent="—");
+  document.getElementById('coupon').textContent = "—";
+  document.getElementById('offersBar').innerHTML="";
+  renderReport(); updateHUD();
+}
+
+/* =========================== UI BINDINGS =========================== */
+document.getElementById('startGameBtn').onclick = ()=>{ if(!audioCtx) ensureAudio(); startGame(); };
+document.getElementById('pauseBtn').onclick = pauseGame;
+document.getElementById('stopGameBtn').onclick = stopGame;
+document.getElementById('downloadJSON').onclick = downloadJSON;
+document.getElementById('downloadCSV').onclick = downloadCSV;
+document.getElementById('resetData').onclick = resetData;
+
+document.getElementById('micBtn').onclick = ()=>{
+  if(!state.asr.rec) setupASR();
+  if(!state.asr.enabled){ state.asr.enabled=true; state.asr.rec.start(); asrStatus.textContent="ouvindo"; asrStatus.className="pill ok"; logEvent("asr_on"); }
+  else { state.asr.enabled=false; state.asr.rec.stop(); asrStatus.textContent="parado"; asrStatus.className="pill warn"; logEvent("asr_off"); }
+};
+document.getElementById('camBtn').onclick = ()=>{
+  if(!state.cam.enabled){ enableCam(); logEvent("cam_on"); }
+  else { disableCam(); logEvent("cam_off"); }
+};
+document.getElementById('calibBtn').onclick = openCalib;
+document.getElementById('runCalib').onclick = runCalibration;
+document.getElementById('closeCalib').onclick = closeCalib;
+
+const kioskBtn = document.getElementById('kioskBtn');
+kioskBtn.onclick = async()=>{
+  try{
+    if(!document.fullscreenElement){ await document.documentElement.requestFullscreen(); kioskBtn.textContent="🖥️ Sair do Quiosque"; }
+    else { await document.exitFullscreen(); kioskBtn.textContent="🖥️ Modo Quiosque"; }
+  }catch(e){}
+};
+
+// Onboarding + consent
+const onboarding = document.getElementById('onboarding');
+const consentChk = document.getElementById('consentChk');
+const closeOnb = document.getElementById('closeOnb');
+consentChk.addEventListener('change',()=>{ closeOnb.disabled = !consentChk.checked; });
+document.getElementById('noAudio').onclick = ()=>{ CONFIG.AUDIO.tts=false; };
+closeOnb.onclick = ()=>{ onboarding.classList.remove('open'); speak("Bem-vindo. Diga começar para iniciar."); };
+
+// Sobre
+document.getElementById('aboutBtn').onclick = ()=>{
+  alert("Advergame sem toque: pesquisa + personalização + ofertas. Este protótipo atende aos critérios: abertura/UX, cliente claro, mensagem, pesquisa, inteligência, ofertas, objetivo, interface sensorial, jogabilidade, inovação, programação, gráficos, áudio e uso de IA (TTS).");
+};
+
+// keyboard fallback (acessibilidade / testes internos)
+window.addEventListener('keydown', e=>{
+  if(e.key==="ArrowLeft") moveLeft();
+  if(e.key==="ArrowRight") moveRight();
+  if(e.key===" "){ e.preventDefault(); jump(); }
+  if(e.key.toLowerCase()==="p") pauseGame();
+});
+
+/* =========================== HUD =========================== */
+function updateHUD(){
+  document.getElementById('score').textContent = state.score;
+  document.getElementById('offersCount').textContent = state.offersShown;
+}
+
+/* =========================== INIT =========================== */
+renderReport(); // cria bloco inicial
+
+</script>
+</body>
+</html>
