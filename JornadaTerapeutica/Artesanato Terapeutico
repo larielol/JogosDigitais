@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Jornada do Criador Interior</title>
+    <style>
+        :root {
+            --primary: #8B4513;
+            --secondary: #D2691E;
+            --accent: #FFD700;
+            --light: #F5F5DC;
+            --dark: #2F4F4F;
+            --success: #228B22;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .game-area {
+            display: flex;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background-color: var(--light);
+            padding: 20px;
+            border-right: 1px solid #ddd;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .progress-container {
+            margin-bottom: 30px;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(to right, var(--secondary), var(--accent));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .stat-card {
+            background-color: var(--light);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .narrative {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--secondary);
+        }
+        
+        .choices-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .choice-card {
+            background-color: white;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .choice-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--secondary);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .choice-card.selected {
+            border-color: var(--accent);
+            background-color: #fff9e6;
+        }
+        
+        .choice-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .phase-title {
+            color: var(--primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--light);
+        }
+        
+        .btn {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+            align-self: flex-end;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .results-screen {
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .essence-count {
+            font-size: 4rem;
+            color: var(--accent);
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .report-comparison {
+            display: flex;
+            justify-content: space-around;
+            margin: 30px 0;
+        }
+        
+        .report-card {
+            background-color: var(--light);
+            padding: 20px;
+            border-radius: 10px;
+            width: 45%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            padding: 5px 0;
+            border-bottom: 1px dashed #ccc;
+        }
+        
+        .metric-value {
+            font-weight: bold;
+        }
+        
+        .improvement {
+            color: var(--success);
+        }
+        
+        .deterioration {
+            color: #ff4444;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>A Jornada do Criador Interior</h1>
+            <div class="subtitle">Transforme sua saúde mental através do artesanato terapêutico</div>
+        </header>
+        
+        <div class="game-area">
+            <div class="sidebar">
+                <h2 class="phase-title">Sua Jornada</h2>
+                <div class="progress-container">
+                    <div>Progresso: <span id="progress-percent">0%</span></div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div>Essências de Harmonia</div>
+                        <div class="stat-value" id="essence-count">0</div>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat-card">
+                        <div>Estresse</div>
+                        <div class="stat-value" id="stress-level">85%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>Ansiedade</div>
+                        <div class="stat-value" id="anxiety-level">78%</div>
+                    </div>
+                    <div class="stat-card">
+                        <div>Depressão</div>
+                        <div class="stat-value" id="depression-level">72%</div>
+                    </div>
+                </div>
+                
+                <h3>Suas Escolhas</h3>
+                <div id="choices-summary">
+                    <p>Ainda não foram feitas escolhas.</p>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <!-- Tela de Introdução -->
+                <div id="intro-screen">
+                    <div class="narrative">
+                        <h2>Bem-vindo à Jornada do Criador Interior</h2>
+                        <p>Você é um Guardião da Alma, um artesão que descobriu o poder terapêutico da criação manual. Sua missão é percorrer os caminhos do artesanato para curar feridas internas, reduzir o estresse, a ansiedade e a depressão.</p>
+                        <p>Na Fase 1, você recebeu um relatório sobre seu estado mental. Agora, na Fase 2, você explorará como o artesanato terapêutico pode transformar esses indicadores.</p>
+                        <p>Cada escolha que fizer nesta jornada irá gerar "Essências de Harmonia" que melhorarão sua saúde mental. Trilhas mais longas e complexas geram mais benefícios.</p>
+                    </div>
+                    <button class="btn" id="start-btn">Iniciar Jornada</button>
+                </div>
+                
+                <!-- Tela de Fase 1 - Relatório Inicial -->
+                <div id="phase1-screen" class="hidden">
+                    <div class="narrative">
+                        <h2>Relatório da Fase 1 - Estado Inicial</h2>
+                        <p>Antes de iniciar sua jornada no artesanato terapêutico, estes são seus indicadores de saúde mental:</p>
+                        
+                        <div class="report-comparison">
+                            <div class="report-card">
+                                <h3>Indicadores Atuais</h3>
+                                <div class="metric">
+                                    <span>Estresse:</span>
+                                    <span class="metric-value">85%</span>
+                                </div>
+                                <div class="metric">
+                                    <span>Ansiedade:</span>
+                                    <span class="metric-value">78%</span>
+                                </div>
+                                <div class="metric">
+                                    <span>Depressão:</span>
+                                    <span class="metric-value">72%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <p>Estes valores representam o desafio que você enfrenta. Através do artesanato terapêutico, você poderá reduzi-los significativamente.</p>
+                    </div>
+                    <button class="btn" id="continue-phase1-btn">Continuar para a Jornada</button>
+                </div>
+                
+                <!-- Tela de Escolhas da Jornada -->
+                <div id="journey-screen" class="hidden">
+                    <div class="narrative" id="current-narrative">
+                        <h2 id="phase-title">Fase 1: Escolha do Tipo de Artesanato</h2>
+                        <p id="phase-description">Selecione até 3 tipos de obras de artesanato que deseja explorar em sua jornada. Cada tipo confere habilidades e benefícios terapêuticos distintos.</p>
+                    </div>
+                    
+                    <div class="choices-container" id="choices-container">
+                        <!-- As opções serão inseridas aqui via JavaScript -->
+                    </div>
+                    
+                    <button class="btn" id="next-phase-btn" disabled>Continuar</button>
+                </div>
+                
+                <!-- Tela de Resultados -->
+                <div id="results-screen" class="hidden results-screen">
+                    <h2>Jornada Concluída!</h2>
+                    <div class="narrative">
+                        <p>Parabéns! Você completou sua jornada no artesanato terapêutico e coletou Essências de Harmonia suficientes para transformar sua saúde mental.</p>
+                    </div>
+                    
+                    <div class="essence-count" id="final-essence-count">0</div>
+                    <div>Essências de Harmonia Coletadas</div>
+                    
+                    <div class="report-comparison">
+                        <div class="report-card">
+                            <h3>Relatório Inicial (Fase 1)</h3>
+                            <div class="metric">
+                                <span>Estresse:</span>
+                                <span class="metric-value">85%</span>
+                            </div>
+                            <div class="metric">
+                                <span>Ansiedade:</span>
+                                <span class="metric-value">78%</span>
+                            </div>
+                            <div class="metric">
+                                <span>Depressão:</span>
+                                <span class="metric-value">72%</span>
+                            </div>
+                        </div>
+                        
+                        <div class="report-card">
+                            <h3>Novo Relatório (Pós-Jornada)</h3>
+                            <div class="metric">
+                                <span>Estresse:</span>
+                                <span class="metric-value" id="new-stress">85%</span>
+                            </div>
+                            <div class="metric">
+                                <span>Ansiedade:</span>
+                                <span class="metric-value" id="new-anxiety">78%</span>
+                            </div>
+                            <div class="metric">
+                                <span>Depressão:</span>
+                                <span class="metric-value" id="new-depression">72%</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="narrative">
+                        <h3>Impacto da Sua Jornada</h3>
+                        <p id="impact-description">Sua jornada no artesanato terapêutico resultou em melhoras significativas em sua saúde mental. Continue praticando para manter esses benefícios!</p>
+                    </div>
+                    
+                    <button class="btn" id="restart-btn">Refazer Jornada</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dados do jogo
+        const gameData = {
+            phases: [
+                {
+                    title: "Escolha do Tipo de Artesanato",
+                    description: "Selecione até 3 tipos de obras de artesanato que deseja explorar em sua jornada. Cada tipo confere habilidades e benefícios terapêuticos distintos.",
+                    type: "multiple",
+                    maxChoices: 3,
+                    options: [
+                        { id: 1, name: "Tecelagem da Alma", icon: "✨", description: "Macramê e trabalhos com fios", essence: 2 },
+                        { id: 2, name: "Madeira dos Ancestrais", icon: "🔥", description: "Entalhes e esculturas em madeira", essence: 3 },
+                        { id: 3, name: "Fios do Tempo", icon: "🌊", description: "Renda Renascença e bordados", essence: 2 },
+                        { id: 4, name: "Luz Interior", icon: "💎", description: "Joias semipreciosas", essence: 3 },
+                        { id: 5, name: "Cores do Espírito", icon: "🌀", description: "Pinturas e colagens", essence: 2 },
+                        { id: 6, name: "Renascimento Verde", icon: "🌿", description: "Arte com resíduos recicláveis", essence: 4 },
+                        { id: 7, name: "Brinquedos do Coração", icon: "🎠", description: "Brinquedos artesanais", essence: 3 },
+                        { id: 8, name: "Objetos da Memória", icon: "🏺", description: "Decoração artesanal", essence: 2 },
+                        { id: 9, name: "Raízes do Vínculo", icon: "🔗", description: "Crochê e bordados culturais", essence: 2 },
+                        { id: 10, name: "Engrenagens do Cuidado", icon: "⚙️", description: "Objetos funcionais utilitários", essence: 3 }
+                    ]
+                },
+                {
+                    title: "Processos Criativos",
+                    description: "Selecione 2 processos criativos que mais ressoam com sua forma de criação. Estes definirão sua abordagem ao artesanato.",
+                    type: "multiple",
+                    maxChoices: 2,
+                    options: [
+                        { id: 11, name: "Manualidade Contemplativa", icon: "🖐️", description: "Trabalho manual focado e meditativo", essence: 3 },
+                        { id: 12, name: "Explosão Artística", icon: "🎨", description: "Criação livre e expressiva", essence: 2 },
+                        { id: 13, name: "Planejamento Funcional", icon: "📐", description: "Criação com foco na utilidade", essence: 2 },
+                        { id: 14, name: "Experimentação Digital", icon: "💻", description: "Uso de tecnologia no processo", essence: 3 },
+                        { id: 15, name: "Criação Intuitiva", icon: "🧘", description: "Seguindo a intuição momento a momento", essence: 4 },
+                        { id: 16, name: "Pesquisa Simbólica", icon: "📖", description: "Baseado em significados e símbolos", essence: 3 },
+                        { id: 17, name: "Teatro do Artesanato", icon: "🎭", description: "Criação com performance", essence: 2 },
+                        { id: 18, name: "Artesanato como Registro", icon: "📸", description: "Documentação do processo criativo", essence: 2 },
+                        { id: 19, name: "Co-criação com Histórias", icon: "💬", description: "Baseado em narrativas pessoais", essence: 4 },
+                        { id: 20, name: "Ciclo Criativo Repetitivo", icon: "🔄", description: "Rotina produtiva como meditação", essence: 3 }
+                    ]
+                },
+                {
+                    title: "Socialização da Experiência",
+                    description: "Escolha 2 a 3 formas de socializar sua experiência com o artesanato. A partilha amplifica os benefícios terapêuticos.",
+                    type: "multiple",
+                    maxChoices: 3,
+                    options: [
+                        { id: 21, name: "Compartilhar Pesquisas", icon: "🔍", description: "Divulgação de conhecimentos adquiridos", essence: 2 },
+                        { id: 22, name: "Planejar com o Coletivo", icon: "🧠", description: "Criação em grupos colaborativos", essence: 3 },
+                        { id: 23, name: "Oficina Interativa", icon: "✋", description: "Workshops de criação conjunta", essence: 4 },
+                        { id: 24, name: "Exposição Comunitária", icon: "🖼️", description: "Mostras públicas do trabalho", essence: 3 },
+                        { id: 25, name: "Feira Afetiva", icon: "🛍️", description: "Vendas em eventos comunitários", essence: 2 },
+                        { id: 26, name: "Lives de Criação", icon: "📹", description: "Compartilhamento online em tempo real", essence: 3 },
+                        { id: 27, name: "Círculo de Histórias", icon: "🗣️", description: "Discussões sobre o significado das obras", essence: 4 },
+                        { id: 28, name: "Presentear com Significado", icon: "🎁", description: "Doação de obras com histórias", essence: 3 },
+                        { id: 29, name: "Duplas Criativas", icon: "👥", description: "Parcerias mestre-aprendiz", essence: 4 },
+                        { id: 30, name: "Intercâmbio Geracional", icon: "🤝", description: "Troca de saberes entre gerações", essence: 5 }
+                    ]
+                },
+                {
+                    title: "Empreendedorismo com Artesanato",
+                    description: "Selecione 1 a 2 estratégias de empreendedorismo que deseja explorar. O artesanato também pode ser uma fonte de sustento.",
+                    type: "multiple",
+                    maxChoices: 2,
+                    options: [
+                        { id: 31, name: "Venda Online com Histórias", icon: "🌐", description: "E-commerce com narrativas pessoais", essence: 3 },
+                        { id: 32, name: "Loja Coletiva Local", icon: "🏬", description: "Espaço físico compartilhado", essence: 2 },
+                        { id: 33, name: "Empreendedorismo Social", icon: "🤲", description: "Vendas com impacto comunitário", essence: 5 },
+                        { id: 34, name: "Assinaturas Artesanais", icon: "📦", description: "Kits mensais de artesanato", essence: 3 },
+                        { id: 35, name: "Eventos Culturais", icon: "🎟️", description: "Venda em feiras e festivais", essence: 2 },
+                        { id: 36, name: "Cursos e Oficinas", icon: "📚", description: "Ensino de técnicas artesanais", essence: 4 },
+                        { id: 37, name: "Parcerias com ONGs", icon: "🤝", description: "Trabalho com organizações sociais", essence: 4 },
+                        { id: 38, name: "Marca Pessoal", icon: "💡", description: "Desenvolvimento de identidade única", essence: 3 },
+                        { id: 39, name: "Mentoria para Artesãos", icon: "📈", description: "Orientação a novos criadores", essence: 5 },
+                        { id: 40, name: "Exportação Cultural", icon: "🌍", description: "Divulgação da cultura local", essence: 4 }
+                    ]
+                },
+                {
+                    title: "Dedicação à Jornada Criativa",
+                    description: "Distribua 10 pontos de energia mental entre as etapas do processo criativo. Isso definirá seu foco na jornada.",
+                    type: "distribution",
+                    totalPoints: 10,
+                    options: [
+                        { id: 41, name: "Inspiração Inicial", icon: "🌱", description: "Pesquisa, sonho e conceito", essence: 1 },
+                        { id: 42, name: "Execução Técnica", icon: "🛠️", description: "Habilidade manual e criativa", essence: 1 },
+                        { id: 43, name: "Ajustes e Retoques", icon: "🔍", description: "Refinamento com cuidado", essence: 1 },
+                        { id: 44, name: "Documentação", icon: "🧾", description: "Registro do processo", essence: 1 },
+                        { id: 45, name: "Registro Fotográfico", icon: "📸", description: "Documentação visual", essence: 1 },
+                        { id: 46, name: "Compartilhamento", icon: "📣", description: "Divulgação em redes", essence: 1 },
+                        { id: 47, name: "Feedback", icon: "💬", description: "Aprendizado com a comunidade", essence: 1 },
+                        { id: 48, name: "Embalagem Afetiva", icon: "📦", description: "Preparação para presentear", essence: 1 },
+                        { id: 49, name: "Organização de Portfólio", icon: "🗂️", description: "Catalogação das obras", essence: 1 },
+                        { id: 50, name: "Recriação", icon: "🔄", description: "Reinvenção a partir da experiência", essence: 1 }
+                    ]
+                }
+            ],
+            currentPhase: 0,
+            selectedOptions: [],
+            essenceCount: 0,
+            initialMetrics: {
+                stress: 85,
+                anxiety: 78,
+                depression: 72
+            }
+        };
+
+        // Elementos DOM
+        const introScreen = document.getElementById('intro-screen');
+        const phase1Screen = document.getElementById('phase1-screen');
+        const journeyScreen = document.getElementById('journey-screen');
+        const resultsScreen = document.getElementById('results-screen');
+        
+        const startBtn = document.getElementById('start-btn');
+        const continuePhase1Btn = document.getElementById('continue-phase1-btn');
+        const nextPhaseBtn = document.getElementById('next-phase-btn');
+        const restartBtn = document.getElementById('restart-btn');
+        
+        const progressFill = document.getElementById('progress-fill');
+        const progressPercent = document.getElementById('progress-percent');
+        const essenceCountElem = document.getElementById('essence-count');
+        const stressLevel = document.getElementById('stress-level');
+        const anxietyLevel = document.getElementById('anxiety-level');
+        const depressionLevel = document.getElementById('depression-level');
+        
+        const phaseTitle = document.getElementById('phase-title');
+        const phaseDescription = document.getElementById('phase-description');
+        const choicesContainer = document.getElementById('choices-container');
+        const choicesSummary = document.getElementById('choices-summary');
+        
+        const finalEssenceCount = document.getElementById('final-essence-count');
+        const newStress = document.getElementById('new-stress');
+        const newAnxiety = document.getElementById('new-anxiety');
+        const newDepression = document.getElementById('new-depression');
+        const impactDescription = document.getElementById('impact-description');
+
+        // Inicialização do jogo
+        function initGame() {
+            startBtn.addEventListener('click', showPhase1);
+            continuePhase1Btn.addEventListener('click', startJourney);
+            nextPhaseBtn.addEventListener('click', goToNextPhase);
+            restartBtn.addEventListener('click', restartGame);
+            
+            updateMetricsDisplay();
+        }
+
+        // Mostrar a tela da Fase 1 (Relatório Inicial)
+        function showPhase1() {
+            introScreen.classList.add('hidden');
+            phase1Screen.classList.remove('hidden');
+        }
+
+        // Iniciar a jornada (Fase 2)
+        function startJourney() {
+            phase1Screen.classList.add('hidden');
+            journeyScreen.classList.remove('hidden');
+            loadCurrentPhase();
+        }
+
+        // Carregar a fase atual
+        function loadCurrentPhase() {
+            const phase = gameData.phases[gameData.currentPhase];
+            phaseTitle.textContent = `Fase ${gameData.currentPhase + 1}: ${phase.title}`;
+            phaseDescription.textContent = phase.description;
+            
+            // Atualizar barra de progresso
+            const progress = (gameData.currentPhase / gameData.phases.length) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressPercent.textContent = `${Math.round(progress)}%`;
+            
+            // Limpar container de escolhas
+            choicesContainer.innerHTML = '';
+            
+            // Carregar opções baseadas no tipo de fase
+            if (phase.type === 'multiple') {
+                loadMultipleChoicePhase(phase);
+            } else if (phase.type === 'distribution') {
+                loadDistributionPhase(phase);
+            }
+            
+            // Atualizar resumo das escolhas
+            updateChoicesSummary();
+        }
+
+        // Carregar fase de múltipla escolha
+        function loadMultipleChoicePhase(phase) {
+            phase.options.forEach(option => {
+                const choiceCard = document.createElement('div');
+                choiceCard.className = 'choice-card';
+                choiceCard.innerHTML = `
+                    <div class="choice-icon">${option.icon}</div>
+                    <h3>${option.name}</h3>
+                    <p>${option.description}</p>
+                    <small>+${option.essence} Essências</small>
+                `;
+                
+                choiceCard.addEventListener('click', () => {
+                    toggleOptionSelection(option, choiceCard, phase.maxChoices);
+                });
+                
+                choicesContainer.appendChild(choiceCard);
+            });
+        }
+
+        // Carregar fase de distribuição de pontos
+        function loadDistributionPhase(phase) {
+            const pointsInfo = document.createElement('div');
+            pointsInfo.className = 'narrative';
+            pointsInfo.innerHTML = `<p>Pontos disponíveis: <span id="points-remaining">${phase.totalPoints}</span></p>`;
+            choicesContainer.appendChild(pointsInfo);
+            
+            phase.options.forEach(option => {
+                const choiceCard = document.createElement('div');
+                choiceCard.className = 'choice-card';
+                choiceCard.innerHTML = `
+                    <div class="choice-icon">${option.icon}</div>
+                    <h3>${option.name}</h3>
+                    <p>${option.description}</p>
+                    <div class="points-control">
+                        <button class="point-btn minus">-</button>
+                        <span class="points-count">0</span>
+                        <button class="point-btn plus">+</button>
+                    </div>
+                `;
+                
+                const pointsCount = choiceCard.querySelector('.points-count');
+                const minusBtn = choiceCard.querySelector('.minus');
+                const plusBtn = choiceCard.querySelector('.plus');
+                
+                let points = 0;
+                
+                minusBtn.addEventListener('click', () => {
+                    if (points > 0) {
+                        points--;
+                        pointsCount.textContent = points;
+                        updateDistributionPoints();
+                    }
+                });
+                
+                plusBtn.addEventListener('click', () => {
+                    const pointsRemaining = parseInt(document.getElementById('points-remaining').textContent);
+                    if (pointsRemaining > 0) {
+                        points++;
+                        pointsCount.textContent = points;
+                        updateDistributionPoints();
+                    }
+                });
+                
+                choicesContainer.appendChild(choiceCard);
+            });
+            
+            // Adicionar a opção selecionada para esta fase
+            gameData.selectedOptions[gameData.currentPhase] = {
+                phase: phase.title,
+                type: 'distribution',
+                points: Array(phase.options.length).fill(0)
+            };
+        }
+
+        // Atualizar pontos de distribuição
+        function updateDistributionPoints() {
+            const pointsElements = document.querySelectorAll('.points-count');
+            let totalUsed = 0;
+            
+            pointsElements.forEach(element => {
+                totalUsed += parseInt(element.textContent);
+            });
+            
+            const pointsRemaining = gameData.phases[gameData.currentPhase].totalPoints - totalUsed;
+            document.getElementById('points-remaining').textContent = pointsRemaining;
+            
+            // Atualizar dados do jogo
+            const points = [];
+            pointsElements.forEach(element => {
+                points.push(parseInt(element.textContent));
+            });
+            
+            gameData.selectedOptions[gameData.currentPhase].points = points;
+            
+            // Habilitar/desabilitar botão próximo
+            nextPhaseBtn.disabled = pointsRemaining !== 0;
+        }
+
+        // Alternar seleção de opção
+        function toggleOptionSelection(option, choiceCard, maxChoices) {
+            const phaseIndex = gameData.currentPhase;
+            if (!gameData.selectedOptions[phaseIndex]) {
+                gameData.selectedOptions[phaseIndex] = {
+                    phase: gameData.phases[phaseIndex].title,
+                    type: 'multiple',
+                    options: []
+                };
+            }
+            
+            const selectedOptions = gameData.selectedOptions[phaseIndex].options;
+            const index = selectedOptions.findIndex(opt => opt.id === option.id);
+            
+            if (index === -1) {
+                if (selectedOptions.length < maxChoices) {
+                    selectedOptions.push(option);
+                    choiceCard.classList.add('selected');
+                }
+            } else {
+                selectedOptions.splice(index, 1);
+                choiceCard.classList.remove('selected');
+            }
+            
+            // Habilitar/desabilitar botão próximo
+            nextPhaseBtn.disabled = selectedOptions.length === 0;
+        }
+
+        // Ir para a próxima fase
+        function goToNextPhase() {
+            // Calcular essências ganhas nesta fase
+            const phase = gameData.phases[gameData.currentPhase];
+            let phaseEssence = 0;
+            
+            if (phase.type === 'multiple') {
+                const selected = gameData.selectedOptions[gameData.currentPhase].options;
+                selected.forEach(option => {
+                    phaseEssence += option.essence;
+                });
+            } else if (phase.type === 'distribution') {
+                const points = gameData.selectedOptions[gameData.currentPhase].points;
+                points.forEach((point, index) => {
+                    phaseEssence += point * phase.options[index].essence;
+                });
+            }
+            
+            gameData.essenceCount += phaseEssence;
+            essenceCountElem.textContent = gameData.essenceCount;
+            
+            // Avançar para a próxima fase ou mostrar resultados
+            gameData.currentPhase++;
+            
+            if (gameData.currentPhase < gameData.phases.length) {
+                loadCurrentPhase();
+            } else {
+                showResults();
+            }
+        }
+
+        // Mostrar tela de resultados
+        function showResults() {
+            journeyScreen.classList.add('hidden');
+            resultsScreen.classList.remove('hidden');
+            
+            // Calcular novas métricas baseadas nas essências coletadas
+            const essenceImpact = gameData.essenceCount * 0.5; // Cada essência reduz 0.5% nos indicadores
+            
+            const newStressValue = Math.max(0, gameData.initialMetrics.stress - essenceImpact);
+            const newAnxietyValue = Math.max(0, gameData.initialMetrics.anxiety - essenceImpact);
+            const newDepressionValue = Math.max(0, gameData.initialMetrics.depression - essenceImpact);
+            
+            // Atualizar display
+            finalEssenceCount.textContent = gameData.essenceCount;
+            newStress.textContent = `${Math.round(newStressValue)}%`;
+            newAnxiety.textContent = `${Math.round(newAnxietyValue)}%`;
+            newDepression.textContent = `${Math.round(newDepressionValue)}%`;
+            
+            // Atualizar descrição do impacto
+            let impactText = "Sua jornada no artesanato terapêutico resultou em ";
+            
+            if (essenceImpact > 30) {
+                impactText += "melhoras extraordinárias em sua saúde mental. Sua dedicação à prática do artesanato foi profundamente transformadora.";
+            } else if (essenceImpact > 15) {
+                impactText += "melhoras significativas em sua saúde mental. O artesanato mostrou-se uma ferramenta poderosa de cura.";
+            } else {
+                impactText += "melhoras moderadas em sua saúde mental. Continue explorando o artesanato para obter benefícios mais profundos.";
+            }
+            
+            impactText += " Continue praticando para manter esses benefícios!";
+            impactDescription.textContent = impactText;
+            
+            // Atualizar métricas na sidebar
+            stressLevel.textContent = `${Math.round(newStressValue)}%`;
+            anxietyLevel.textContent = `${Math.round(newAnxietyValue)}%`;
+            depressionLevel.textContent = `${Math.round(newDepressionValue)}%`;
+        }
+
+        // Reiniciar o jogo
+        function restartGame() {
+            gameData.currentPhase = 0;
+            gameData.selectedOptions = [];
+            gameData.essenceCount = 0;
+            
+            resultsScreen.classList.add('hidden');
+            introScreen.classList.remove('hidden');
+            
+            updateMetricsDisplay();
+        }
+
+        // Atualizar display das métricas
+        function updateMetricsDisplay() {
+            essenceCountElem.textContent = gameData.essenceCount;
+            stressLevel.textContent = `${gameData.initialMetrics.stress}%`;
+            anxietyLevel.textContent = `${gameData.initialMetrics.anxiety}%`;
+            depressionLevel.textContent = `${gameData.initialMetrics.depression}%`;
+        }
+
+        // Atualizar resumo das escolhas
+        function updateChoicesSummary() {
+            let summaryHTML = '';
+            
+            gameData.selectedOptions.forEach((phaseSelection, index) => {
+                if (phaseSelection) {
+                    summaryHTML += `<h4>${phaseSelection.phase}</h4>`;
+                    
+                    if (phaseSelection.type === 'multiple') {
+                        phaseSelection.options.forEach(option => {
+                            summaryHTML += `<p>• ${option.icon} ${option.name}</p>`;
+                        });
+                    } else if (phaseSelection.type === 'distribution') {
+                        phaseSelection.points.forEach((points, optIndex) => {
+                            if (points > 0) {
+                                const option = gameData.phases[index].options[optIndex];
+                                summaryHTML += `<p>• ${option.icon} ${option.name}: ${points} pts</p>`;
+                            }
+                        });
+                    }
+                }
+            });
+            
+            if (summaryHTML === '') {
+                summaryHTML = '<p>Ainda não foram feitas escolhas.</p>';
+            }
+            
+            choicesSummary.innerHTML = summaryHTML;
+        }
+
+        // Inicializar o jogo quando a página carregar
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
